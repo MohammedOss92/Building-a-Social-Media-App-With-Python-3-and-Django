@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.http import HttpResponseRedirect
 
 from django.views import View
 from .models import *
@@ -276,3 +277,78 @@ class RemoveFollower(LoginRequiredMixin, View):
         profile.followers.remove(request.user)
 
         return redirect('profile', pk=profile.pk)
+    
+
+# الفئة AddLike تقوم بإدارة إضافة أو إزالة الإعجابات من منشور.
+# هذه الفئة تتطلب أن يكون المستخدم مسجلاً للدخول، لذا نستخدم LoginRequiredMixin.
+
+class AddLike(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        # نحصل على المنشور الذي نريد إضافة الإعجاب إليه بناءً على المفتاح الأساسي (pk).
+        post = Post.objects.get(pk=pk)
+
+        # نتحقق إذا كان المستخدم قد قام بالفعل بعدم الإعجاب بالمنشور.
+        is_dislike = False
+        for dislike in post.dislikes.all():
+            if dislike == request.user:
+                is_dislike = True
+                break
+
+        # إذا كان المستخدم قد قام بعدم الإعجاب سابقًا، نزيل عدم الإعجاب.
+        if is_dislike:
+            post.dislikes.remove(request.user)
+
+        # نتحقق إذا كان المستخدم قد أعجب بالفعل بالمنشور.
+        is_like = False
+        for like in post.likes.all():
+            if like == request.user:
+                is_like = True
+                break
+
+        # إذا لم يقم المستخدم بالإعجاب سابقًا، نضيف الإعجاب.
+        if not is_like:
+            post.likes.add(request.user)
+
+        # إذا كان المستخدم قد قام بالإعجاب سابقًا، نزيل الإعجاب.
+        if is_like:
+            post.likes.remove(request.user)
+
+        # نعيد توجيه المستخدم إلى الصفحة السابقة بعد إتمام العملية.
+        next = request.POST.get('next', '/')
+        return HttpResponseRedirect(next)
+
+
+class AddDislike(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        # الحصول على المنشور باستخدام المعرف (pk)
+        post = Post.objects.get(pk=pk)
+
+        # التحقق مما إذا كان المستخدم قد أعجب بالمنشور بالفعل
+        is_like = False
+        for like in post.likes.all():
+            if like == request.user:
+                is_like = True
+                break
+
+        # إذا كان المستخدم قد أعجب بالمنشور بالفعل، قم بإزالة الإعجاب
+        if is_like:
+            post.likes.remove(request.user)
+
+        # التحقق مما إذا كان المستخدم قد أضاف "عدم إعجاب" (Dislike) للمنشور بالفعل
+        is_dislike = False
+        for dislike in post.dislikes.all():
+            if dislike == request.user:
+                is_dislike = True
+                break
+
+        # إذا لم يكن المستخدم قد أضاف "عدم إعجاب" بالفعل، قم بإضافته
+        if not is_dislike:
+            post.dislikes.add(request.user)
+
+        # إذا كان المستخدم قد أضاف "عدم إعجاب" بالفعل، قم بإزالته
+        if is_dislike:
+            post.dislikes.remove(request.user)
+
+        # إعادة التوجيه إلى الصفحة السابقة أو الصفحة الرئيسية
+        next = request.POST.get('next', '/')
+        return HttpResponseRedirect(next)
