@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.http import HttpResponseRedirect
+from django.db.models import Q
 
 from django.views import View
 from .models import *
@@ -352,3 +353,24 @@ class AddDislike(LoginRequiredMixin, View):
         # إعادة التوجيه إلى الصفحة السابقة أو الصفحة الرئيسية
         next = request.POST.get('next', '/')
         return HttpResponseRedirect(next)
+
+
+# تعريف View للبحث عن المستخدمين
+class UserSearch(View):
+    def get(self, request, *args, **kwargs):
+        # الحصول على قيمة البحث من المستخدم (من الـ GET request)
+        query = self.request.GET.get('query')
+        
+        #الرمز Q في Django يشير إلى كائنات Q objects التي تُستخدم لبناء استعلامات معقدة في قاعدة البيانات، وخاصة عندما تحتاج إلى استخدام شروط منطقية مثل OR وAND في استعلام واحد.
+        # تصفية قائمة ملفات المستخدمين بناءً على اسم المستخدم المطابق للقيمة المدخلة في البحث
+        profile_list = UserProfile.objects.filter(
+            Q(user__username__icontains=query)  # البحث في أسماء المستخدمين التي تحتوي على النص المدخل
+        )
+
+        # إعداد البيانات التي سيتم تمريرها إلى القالب (template)
+        context = {
+            'profile_list': profile_list,  # قائمة ملفات المستخدمين المطابقة للبحث
+        }
+
+        # إعادة عرض صفحة البحث مع البيانات المفلترة
+        return render(request, 'social/search.html', context)
