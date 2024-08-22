@@ -10,35 +10,86 @@ from .forms import *
 from django.views.generic.edit import UpdateView, DeleteView
 # Create your views here.
 
+# class PostListView(LoginRequiredMixin, View):
+#     def get(self, request, *args, **kwargs):
+#         posts = Post.objects.all().order_by('-created_on')
+#         form = PostForm()
+
+#         context = {
+#             'post_list': posts,
+#             'form': form,
+#         }
+
+#         return render(request, 'social/post_list.html', context)
+
+
+#     def post(self, request, *args, **kwargs):
+#         posts = Post.objects.all().order_by('-created_on')
+#         form = PostForm(request.POST)
+
+#         if form.is_valid():
+#             new_post = form.save(commit=False)
+#             new_post.author = request.user
+#             new_post.save()
+
+#         context = {
+#             'post_list': posts,
+#             #'posts': posts,  # تغيير الاسم إلى 'posts'
+#             'form': form,
+#         }
+
+#         return render(request, 'social/post_list.html', context)
+
 class PostListView(LoginRequiredMixin, View):
+    # يُشترط أن يكون المستخدم مسجلاً للدخول للوصول إلى هذا العرض
     def get(self, request, *args, **kwargs):
-        posts = Post.objects.all().order_by('-created_on')
+        # الحصول على المستخدم الذي قام بتسجيل الدخول
+        logged_in_user = request.user
+        
+        # الحصول على جميع المنشورات التي كتبها المستخدمون الذين يتابعهم المستخدم الحالي
+        # يتم استخدام `author__profile__followers__in=[logged_in_user.id]` للبحث عن المنشورات التي كتبها
+        # مستخدمون يتبعهم المستخدم الحالي
+        posts = Post.objects.filter(
+            author__profile__followers__in=[logged_in_user.id]
+        ).order_by('-created_on')  # ترتيب المنشورات من الأحدث إلى الأقدم
+        
+        # إنشاء نموذج جديد للمنشورات
         form = PostForm()
 
+        # إعداد السياق الذي سيتم تمريره إلى القالب
         context = {
-            'post_list': posts,
-            'form': form,
+            'post_list': posts,  # قائمة المنشورات التي سيتم عرضها
+            'form': form,        # نموذج لإضافة منشورات جديدة
         }
 
+        # عرض قالب `post_list.html` مع السياق الذي يحتوي على المنشورات والنموذج
         return render(request, 'social/post_list.html', context)
-
 
     def post(self, request, *args, **kwargs):
+        # الحصول على جميع المنشورات وترتيبها من الأحدث إلى الأقدم
         posts = Post.objects.all().order_by('-created_on')
+        
+        # إنشاء نموذج للمنشورات باستخدام البيانات المرسلة عبر POST
         form = PostForm(request.POST)
 
+        # التحقق من صحة النموذج
         if form.is_valid():
+            # حفظ المنشور الجديد بدون تقديمه مباشرة
             new_post = form.save(commit=False)
+            # تعيين مؤلف المنشور إلى المستخدم الذي قام بتسجيل الدخول
             new_post.author = request.user
+            # حفظ المنشور الجديد في قاعدة البيانات
             new_post.save()
 
+        # إعداد السياق الذي سيتم تمريره إلى القالب
         context = {
-            'post_list': posts,
-            #'posts': posts,  # تغيير الاسم إلى 'posts'
-            'form': form,
+            'post_list': posts,  # قائمة المنشورات التي سيتم عرضها
+            'form': form,        # نموذج لإضافة منشورات جديدة
         }
 
+        # عرض قالب `post_list.html` مع السياق الذي يحتوي على المنشورات والنموذج
         return render(request, 'social/post_list.html', context)
+
     
 # class PostDetailView(View):
 #     def get(self, request,pk, *args, **kwargs):
