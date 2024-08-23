@@ -425,3 +425,22 @@ class UserSearch(View):
 
         # إعادة عرض صفحة البحث مع البيانات المفلترة
         return render(request, 'social/search.html', context)
+    
+    
+class ListFollowers(View):
+    def get(self, request, pk, *args, **kwargs):
+        # الحصول على ملف تعريف المستخدم بناءً على الـ primary key (pk) المرسل في الطلب
+        profile = UserProfile.objects.get(pk=pk)
+        
+        # الحصول على جميع المتابعين لهذا الملف الشخصي
+        followers = profile.followers.all()
+
+        # إعداد السياق الذي سيتم تمريره إلى القالب
+        context = {
+            'profile': profile,      # الملف الشخصي للمستخدم الذي يتم عرض قائمة المتابعين له
+            'followers': followers,  # قائمة المتابعين للمستخدم
+        }
+
+        # عرض قالب `followers_list.html` مع السياق الذي يحتوي على الملف الشخصي وقائمة المتابعين
+        return render(request, 'social/followers_list.html', context)
+
