@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect,HttpResponse
 from django.db.models import Q
 
 from django.views import View
@@ -210,6 +210,7 @@ class PostDetailView(LoginRequiredMixin,  View):
             new_comment.save()
         
         comments = Comment.objects.filter(post=post).order_by('-created_on')
+        notification = Notification.objects.create(notification_type=2, from_user=request.user, to_user=post.author, post=post)
 
         context = {
             'post': post,
@@ -321,6 +322,9 @@ class AddFollower(LoginRequiredMixin, View):
         profile = UserProfile.objects.get(pk=pk)
         profile.followers.add(request.user)
 
+        notification = Notification.objects.create(notification_type=3, from_user=request.user, to_user=profile.user)
+
+
         return redirect('profile', pk=profile.pk)
 
 class RemoveFollower(LoginRequiredMixin, View):
@@ -360,6 +364,8 @@ class AddLike(LoginRequiredMixin, View):
         # إذا لم يقم المستخدم بالإعجاب سابقًا، نضيف الإعجاب.
         if not is_like:
             post.likes.add(request.user)
+            notification = Notification.objects.create(notification_type=1, from_user=request.user, to_user=post.author, post=post)
+
 
         # إذا كان المستخدم قد قام بالإعجاب سابقًا، نزيل الإعجاب.
         if is_like:
@@ -459,6 +465,8 @@ class CommentReplyView(LoginRequiredMixin, View):
             new_comment.parent = parent_comment
             new_comment.save()
 
+        notification = Notification.objects.create(notification_type=2, from_user=request.user, to_user=parent_comment.author, comment=new_comment)
+
         return redirect('post-detail', pk=post_pk)
     
     
@@ -486,6 +494,8 @@ class AddCommentLike(LoginRequiredMixin, View):
 
         if not is_like:
             comment.likes.add(request.user)
+            notification = Notification.objects.create(notification_type=1, from_user=request.user, to_user=comment.author, comment=comment)
+
 
         if is_like:
             comment.likes.remove(request.user)
@@ -522,3 +532,48 @@ class AddCommentDislike(LoginRequiredMixin, View):
 
         next = request.POST.get('next', '/')
         return HttpResponseRedirect(next)
+
+
+class PostNotification(View):
+    def get(self, request, notification_pk, post_pk, *args, **kwargs):
+        # الحصول على الإشعار المحدد باستخدام معرف الإشعار (notification_pk)
+        notification = Notification.objects.get(pk=notification_pk)
+        
+        # الحصول على المنشور المحدد باستخدام معرف المنشور (post_pk)
+        post = Post.objects.get(pk=post_pk)
+
+        # تعيين علامة بأن المستخدم قد شاهد الإشعار
+        notification.user_has_seen = True
+        notification.save()
+
+        # إعادة توجيه المستخدم إلى صفحة تفاصيل المنشور
+        return redirect('post-detail', pk=post_pk)
+
+
+class FollowNotification(View):
+    def get(self, request, notification_pk, profile_pk, *args, **kwargs):
+        # الحصول على الإشعار المحدد باستخدام معرف الإشعار (notification_pk)
+        notification = Notification.objects.get(pk=notification_pk)
+        
+        # الحصول على الملف الشخصي للمستخدم الذي تم متابعته باستخدام معرف الملف الشخصي (profile_pk)
+        profile = UserProfile.objects.get(pk=profile_pk)
+
+        # تعيين علامة بأن المستخدم قد شاهد الإشعار
+        notification.user_has_seen = True
+        notification.save()
+
+        # إعادة توجيه المستخدم إلى صفحة الملف الشخصي للمستخدم الذي تم متابعته
+        return redirect('profile', pk=profile_pk)
+
+
+class RemoveNotification(View):
+    def delete(self, request, notification_pk, *args, **kwargs):
+        # الحصول على الإشعار المحدد باستخدام معرف الإشعار (notification_pk)
+        notification = Notification.objects.get(pk=notification_pk)
+
+        # تعيين علامة بأن المستخدم قد شاهد الإشعار
+        notification.user_has_seen = True
+        notification.save()
+
+        # إرسال استجابة تفيد بنجاح العملية
+        return HttpResponse('Success', content_type='text/plain')

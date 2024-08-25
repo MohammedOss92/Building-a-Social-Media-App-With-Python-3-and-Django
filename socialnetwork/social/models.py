@@ -86,3 +86,26 @@ def save_user_profile(sender, instance, **kwargs):
     
 # create_user_profile: ينشئ ملفًا شخصيًا جديدًا عندما يتم إنشاء مستخدم جديد.
 # save_user_profile: يحفظ ملف المستخدم الشخصي المرتبط إذا كان موجودًا، مما يضمن مزامنة أي تغييرات بين User و UserProfile.
+    
+
+class Notification(models.Model):
+    # نوع الإشعار: 1 = إعجاب، 2 = تعليق، 3 = متابعة
+    notification_type = models.IntegerField()
+
+    # المستخدم الذي يتم إرسال الإشعار له
+    to_user = models.ForeignKey(User, related_name='notification_to', on_delete=models.CASCADE, null=True)
+
+    # المستخدم الذي أنشأ الإشعار (على سبيل المثال، الشخص الذي أعجب أو علّق أو تابع)
+    from_user = models.ForeignKey(User, related_name='notification_from', on_delete=models.CASCADE, null=True)
+
+    # المنشور المرتبط بالإشعار (يمكن أن يكون فارغًا إذا كان الإشعار لا يتعلق بمنشور)
+    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='+', blank=True, null=True)
+
+    # التعليق المرتبط بالإشعار (يمكن أن يكون فارغًا إذا كان الإشعار لا يتعلق بتعليق)
+    comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='+', blank=True, null=True)
+
+    # تاريخ ووقت إنشاء الإشعار
+    date = models.DateTimeField(default=timezone.now)
+
+    # حالة الإشعار إذا تم رؤيته من قبل المستخدم المستهدف
+    user_has_seen = models.BooleanField(default=False)
