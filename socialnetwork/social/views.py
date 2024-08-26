@@ -66,11 +66,12 @@ class PostListView(LoginRequiredMixin, View):
         return render(request, 'social/post_list.html', context)
 
     def post(self, request, *args, **kwargs):
+        logged_in_user = request.user
         # الحصول على جميع المنشورات وترتيبها من الأحدث إلى الأقدم
         posts = Post.objects.all().order_by('-created_on')
         
         # إنشاء نموذج للمنشورات باستخدام البيانات المرسلة عبر POST
-        form = PostForm(request.POST)
+        form = PostForm(request.POST,request.FILES)
 
         # التحقق من صحة النموذج
         if form.is_valid():

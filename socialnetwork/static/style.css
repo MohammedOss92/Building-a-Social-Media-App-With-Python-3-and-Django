@@ -16,6 +16,13 @@
     padding-top: 0.5rem;
 }
 
+.post-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
 .post-img {
     float: left;
     margin-right: 1rem;
