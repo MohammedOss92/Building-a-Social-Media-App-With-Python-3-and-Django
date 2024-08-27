@@ -111,3 +111,41 @@ class Notification(models.Model):
 
     # حالة الإشعار إذا تم رؤيته من قبل المستخدم المستهدف
     user_has_seen = models.BooleanField(default=False)
+
+
+class ThreadModel(models.Model):
+    # `user`: يشير إلى المستخدم الذي بدأ المحادثة. الربط مع نموذج المستخدم الرئيسي `User` باستخدام `ForeignKey`.
+    # `on_delete=models.CASCADE` يعني أنه إذا تم حذف هذا المستخدم، سيتم حذف جميع المحادثات المرتبطة به.
+    # `related_name='+'` يعني أنه لن يتم إنشاء علاقة عكسية تلقائيًا لهذا الحقل، مما يعني أنه لا يمكن الوصول إلى المحادثات من خلال `user.threadmodel_set` على سبيل المثال.
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+')
+
+    # `receiver`: يشير إلى المستخدم الذي يستقبل الرسائل في هذه المحادثة. مشابه للمستخدم الأول، يستخدم `ForeignKey` للربط مع نموذج `User`.
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+')
+
+
+
+class MessageModel(models.Model):
+    # `thread`: يشير إلى المحادثة التي تنتمي إليها هذه الرسالة. الربط مع `ThreadModel` باستخدام `ForeignKey`.
+    # `blank=True, null=True` يعني أن هذا الحقل يمكن أن يكون فارغًا (غير مملوء) أو يحتوي على قيمة `null`.
+    thread = models.ForeignKey('ThreadModel', related_name='+', on_delete=models.CASCADE, blank=True, null=True)
+
+    # `sender_user`: يشير إلى المستخدم الذي أرسل الرسالة. الربط مع نموذج المستخدم الرئيسي `User`.
+    sender_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+')
+
+    # `receiver_user`: يشير إلى المستخدم الذي استقبل الرسالة. الربط مع نموذج المستخدم الرئيسي `User`.
+    receiver_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+')
+
+    # `body`: يحتوي على نص الرسالة. يستخدم `CharField` مع حد أقصى لطول النص (1000 حرف).
+    body = models.CharField(max_length=1000)
+
+    # `image`: يسمح بإرفاق صورة مع الرسالة. يستخدم `ImageField` لتخزين مسار الصورة المرفقة.
+    # `upload_to='uploads/message_photos'` يحدد المسار الذي سيتم تخزين الصور فيه.
+    # `blank=True, null=True` يعني أن هذا الحقل يمكن أن يكون فارغًا أو يحتوي على قيمة `null`.
+    image = models.ImageField(upload_to='uploads/message_photos', blank=True, null=True)
+
+    # `date`: يحتوي على تاريخ ووقت إرسال الرسالة. يتم تعيينه افتراضيًا إلى الوقت الحالي باستخدام `timezone.now`.
+    date = models.DateTimeField(default=timezone.now)
+
+    # `is_read`: حقل منطقي (Boolean) يشير إلى ما إذا كانت الرسالة قد تمت قراءتها أم لا. الافتراضي هو `False`.
+    is_read = models.BooleanField(default=False)
+

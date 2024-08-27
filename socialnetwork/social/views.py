@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.http import HttpResponseRedirect,HttpResponse
 from django.db.models import Q
-
+from django.contrib.auth.models import User
 from django.views import View
 from .models import *
 from .forms import *
@@ -578,3 +578,126 @@ class RemoveNotification(View):
 
         # إرسال استجابة تفيد بنجاح العملية
         return HttpResponse('Success', content_type='text/plain')
+
+
+class ListThreads(View):
+    #نستخدم Q من django.db.models لإنشاء شرط تصفية معقد يسمح لنا بالبحث عن المحادثات التي يكون فيها المستخدم الحالي إما منشئ المحادثة (user) أو المستقبل للمحادثة (receiver).
+
+    # الدالة `get` تُنفذ عند إرسال طلب GET إلى هذا العرض.
+    def get(self, request, *args, **kwargs):
+        # نقوم بتصفية المحادثات (`ThreadModel`) التي يكون فيها المستخدم الحالي إما المستخدم الذي أنشأ المحادثة (user)
+        # أو المستقبل للمحادثة (receiver). نستخدم `Q` للتصفية بناءً على شرط OR (إما أن يكون المستخدم الحالي هو المستخدم الأول أو المستقبل).
+        threads = ThreadModel.objects.filter(Q(user=request.user) | Q(receiver=request.user))
+
+        # نقوم بتمرير المحادثات المستخرجة إلى القالب عن طريق إنشاء سياق (`context`) يحتوي على المفتاح 'threads'.
+        context = {
+            'threads': threads
+        }
+
+        # نقوم بعرض صفحة HTML (`inbox.html`) باستخدام القالب `social/inbox.html`، وتمرير البيانات المخزنة في `context` إلى القالب.
+        return render(request, 'social/inbox.html', context)
+
+class CreateThread(View):
+    # الدالة `get` تُنفذ عند إرسال طلب GET إلى هذا العرض.
+    def get(self, request, *args, **kwargs):
+        # نقوم بإنشاء نموذج (form) فارغ من النموذج `ThreadForm`.
+        form = ThreadForm()
+
+        # نقوم بتمرير النموذج إلى القالب عن طريق إنشاء سياق (`context`) يحتوي على المفتاح 'form'.
+        context = {
+            'form': form
+        }
+
+        # نقوم بعرض صفحة HTML (`create_thread.html`) باستخدام القالب `social/create_thread.html`، وتمرير البيانات المخزنة في `context` إلى القالب.
+        return render(request, 'social/create_thread.html', context)
+
+    # الدالة `post` تُنفذ عند إرسال طلب POST إلى هذا العرض.
+    def post(self, request, *args, **kwargs):
+        # نقوم بإنشاء نموذج (form) باستخدام البيانات التي تم إرسالها من قبل المستخدم عبر الطلب.
+        form = ThreadForm(request.POST)
+
+        # نحصل على اسم المستخدم الذي أدخله المستخدم في النموذج.
+        username = request.POST.get('username')
+
+        try:
+            # نحاول العثور على المستخدم في قاعدة البيانات باستخدام اسم المستخدم الذي أدخله المستخدم.
+            receiver = User.objects.get(username=username)
+            
+            # نتحقق مما إذا كانت هناك محادثة سابقة بين المستخدم الحالي والمستخدم الذي أدخل اسمه (receiver).
+            if ThreadModel.objects.filter(user=request.user, receiver=receiver).exists():
+                # إذا كانت المحادثة موجودة، نقوم بإعادة توجيه المستخدم إلى تلك المحادثة.
+                thread = ThreadModel.objects.filter(user=request.user, receiver=receiver)[0]
+                return redirect('thread', pk=thread.pk)
+            elif ThreadModel.objects.filter(user=receiver, receiver=request.user).exists():
+                # نتحقق أيضًا إذا كان المستخدم الآخر قد بدأ محادثة مع المستخدم الحالي، وإذا كانت موجودة نقوم بإعادة التوجيه إلى تلك المحادثة.
+                thread = ThreadModel.objects.filter(user=receiver, receiver=request.user)[0]
+                return redirect('thread', pk=thread.pk)
+
+            # إذا كان النموذج صحيحًا (is_valid)، نقوم بإنشاء محادثة جديدة.
+            if form.is_valid():
+                thread = ThreadModel(
+                    user=request.user,
+                    receiver=receiver
+                )
+                thread.save()
+
+                # بعد إنشاء المحادثة الجديدة، نقوم بإعادة التوجيه إلى صفحة المحادثة.
+                return redirect('thread', pk=thread.pk)
+        except:
+            # إذا حدث خطأ (مثل عدم العثور على المستخدم)، نقوم بإعادة توجيه المستخدم إلى صفحة إنشاء المحادثة مجددًا.
+            return redirect('create-thread')
+
+
+class ThreadView(View):
+    # الدالة `get` تُنفذ عند إرسال طلب GET إلى هذا العرض.
+    def get(self, request, pk, *args, **kwargs):
+        # نقوم بإنشاء نموذج فارغ للرسالة ليتم عرضه في صفحة المحادثة.
+        form = MessageForm()
+
+        # نجلب المحادثة (thread) من قاعدة البيانات باستخدام معرف المحادثة (pk).
+        thread = ThreadModel.objects.get(pk=pk)
+
+        # نقوم بجلب قائمة الرسائل التي تنتمي إلى هذه المحادثة من قاعدة البيانات.
+        # نستخدم `filter` لجلب جميع الرسائل التي تحتوي على معرف المحادثة.
+        message_list = MessageModel.objects.filter(thread__pk__contains=pk)
+
+        # نقوم بتجهيز البيانات (context) التي سيتم تمريرها إلى القالب لعرضها.
+        context = {
+            'thread': thread,               # المحادثة الحالية.
+            'form': form,                   # نموذج الرسالة الفارغ.
+            'message_list': message_list    # قائمة الرسائل في المحادثة.
+        }
+
+        # نقوم بعرض صفحة المحادثة (`thread.html`) مع تمرير البيانات اللازمة إليها.
+        return render(request, 'social/thread.html', context)
+
+
+
+
+class CreateMessage(View):
+    # الدالة `post` تُنفذ عند إرسال طلب POST إلى هذا العرض.
+    def post(self, request, pk, *args, **kwargs):
+        # نقوم بجلب المحادثة (thread) من قاعدة البيانات باستخدام معرف المحادثة (pk).
+        thread = ThreadModel.objects.get(pk=pk)
+        
+        # نتحقق من هو المستقبل (receiver) في هذه المحادثة.
+        # إذا كان المستخدم الحالي هو المستقبل في المحادثة، نعين المرسل (user) كـ المستقبل.
+        if thread.receiver == request.user:
+            receiver = thread.user
+        else:
+            # إذا لم يكن المستخدم الحالي هو المستقبل، نعين المستقبل كـ receiver في المحادثة.
+            receiver = thread.receiver
+
+        # نقوم بإنشاء رسالة جديدة باستخدام البيانات التي تم إدخالها في النموذج.
+        message = MessageModel(
+            thread=thread,                  # المحادثة التي تنتمي إليها الرسالة.
+            sender_user=request.user,       # المستخدم الذي أرسل الرسالة (المستخدم الحالي).
+            receiver_user=receiver,         # المستخدم الذي سيتلقى الرسالة.
+            body=request.POST.get('message') # نص الرسالة المرسل من قبل المستخدم.
+        )
+
+        # نقوم بحفظ الرسالة الجديدة في قاعدة البيانات.
+        message.save()
+        
+        # بعد حفظ الرسالة، نقوم بإعادة توجيه المستخدم إلى صفحة المحادثة الحالية.
+        return redirect('thread', pk=pk)
