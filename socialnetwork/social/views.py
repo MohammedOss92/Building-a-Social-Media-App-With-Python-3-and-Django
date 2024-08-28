@@ -8,6 +8,8 @@ from django.views import View
 from .models import *
 from .forms import *
 from django.views.generic.edit import UpdateView, DeleteView
+from django.contrib import messages
+
 # Create your views here.
 
 # class PostListView(LoginRequiredMixin, View):
@@ -565,6 +567,16 @@ class FollowNotification(View):
 
         # إعادة توجيه المستخدم إلى صفحة الملف الشخصي للمستخدم الذي تم متابعته
         return redirect('profile', pk=profile_pk)
+    
+class ThreadNotification(View):
+    def get(self, request, notification_pk, object_pk, *args, **kwargs):
+        notification = Notification.objects.get(pk=notification_pk)
+        thread = ThreadModel.objects.get(pk=object_pk)
+
+        notification.user_has_seen = True
+        notification.save()
+
+        return redirect('thread', pk=object_pk)
 
 
 class RemoveNotification(View):
@@ -644,6 +656,7 @@ class CreateThread(View):
                 # بعد إنشاء المحادثة الجديدة، نقوم بإعادة التوجيه إلى صفحة المحادثة.
                 return redirect('thread', pk=thread.pk)
         except:
+            messages.error(request, 'Invalid username')
             # إذا حدث خطأ (مثل عدم العثور على المستخدم)، نقوم بإعادة توجيه المستخدم إلى صفحة إنشاء المحادثة مجددًا.
             return redirect('create-thread')
 
@@ -672,32 +685,61 @@ class ThreadView(View):
         return render(request, 'social/thread.html', context)
 
 
-
-
 class CreateMessage(View):
-    # الدالة `post` تُنفذ عند إرسال طلب POST إلى هذا العرض.
     def post(self, request, pk, *args, **kwargs):
-        # نقوم بجلب المحادثة (thread) من قاعدة البيانات باستخدام معرف المحادثة (pk).
+        form = MessageForm(request.POST, request.FILES)
         thread = ThreadModel.objects.get(pk=pk)
-        
-        # نتحقق من هو المستقبل (receiver) في هذه المحادثة.
-        # إذا كان المستخدم الحالي هو المستقبل في المحادثة، نعين المرسل (user) كـ المستقبل.
         if thread.receiver == request.user:
             receiver = thread.user
         else:
-            # إذا لم يكن المستخدم الحالي هو المستقبل، نعين المستقبل كـ receiver في المحادثة.
             receiver = thread.receiver
 
-        # نقوم بإنشاء رسالة جديدة باستخدام البيانات التي تم إدخالها في النموذج.
-        message = MessageModel(
-            thread=thread,                  # المحادثة التي تنتمي إليها الرسالة.
-            sender_user=request.user,       # المستخدم الذي أرسل الرسالة (المستخدم الحالي).
-            receiver_user=receiver,         # المستخدم الذي سيتلقى الرسالة.
-            body=request.POST.get('message') # نص الرسالة المرسل من قبل المستخدم.
-        )
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.thread = thread
+            message.sender_user = request.user
+            message.receiver_user = receiver
+            message.save()
 
-        # نقوم بحفظ الرسالة الجديدة في قاعدة البيانات.
-        message.save()
-        
-        # بعد حفظ الرسالة، نقوم بإعادة توجيه المستخدم إلى صفحة المحادثة الحالية.
+        notification = Notification.objects.create(
+            notification_type=4,
+            from_user=request.user,
+            to_user=receiver,
+            thread=thread
+        )
         return redirect('thread', pk=pk)
+
+# class CreateMessage(View):
+#     # الدالة `post` تُنفذ عند إرسال طلب POST إلى هذا العرض.
+#     def post(self, request, pk, *args, **kwargs):
+#         # نقوم بجلب المحادثة (thread) من قاعدة البيانات باستخدام معرف المحادثة (pk).
+#         thread = ThreadModel.objects.get(pk=pk)
+        
+#         # نتحقق من هو المستقبل (receiver) في هذه المحادثة.
+#         # إذا كان المستخدم الحالي هو المستقبل في المحادثة، نعين المرسل (user) كـ المستقبل.
+#         if thread.receiver == request.user:
+#             receiver = thread.user
+#         else:
+#             # إذا لم يكن المستخدم الحالي هو المستقبل، نعين المستقبل كـ receiver في المحادثة.
+#             receiver = thread.receiver
+
+#         # نقوم بإنشاء رسالة جديدة باستخدام البيانات التي تم إدخالها في النموذج.
+#         message = MessageModel(
+#             thread=thread,                  # المحادثة التي تنتمي إليها الرسالة.
+#             sender_user=request.user,       # المستخدم الذي أرسل الرسالة (المستخدم الحالي).
+#             receiver_user=receiver,         # المستخدم الذي سيتلقى الرسالة.
+#             body=request.POST.get('message') # نص الرسالة المرسل من قبل المستخدم.
+#         )
+
+#         # نقوم بحفظ الرسالة الجديدة في قاعدة البيانات.
+#         message.save()
+
+#         notification = Notification.objects.create(
+#             notification_type=4,
+#             from_user=request.user,
+#             to_user=receiver,
+#             thread=thread
+#         )
+        
+#         # بعد حفظ الرسالة، نقوم بإعادة توجيه المستخدم إلى صفحة المحادثة الحالية.
+#         return redirect('thread', pk=pk)

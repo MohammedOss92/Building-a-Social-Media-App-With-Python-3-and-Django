@@ -105,7 +105,7 @@ class Notification(models.Model):
 
     # التعليق المرتبط بالإشعار (يمكن أن يكون فارغًا إذا كان الإشعار لا يتعلق بتعليق)
     comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='+', blank=True, null=True)
-
+    thread = models.ForeignKey('ThreadModel', on_delete=models.CASCADE, related_name='+', blank=True, null=True)
     # تاريخ ووقت إنشاء الإشعار
     date = models.DateTimeField(default=timezone.now)
 

@@ -24,17 +24,29 @@
 
     {% for message in message_list %}
     <div class="row">
+        {% if message.sender_user == request.user %}
         <div class="col-md-12 my-1">
-            {% if message.sender_user == request.user %}
+            {% if message.image %}
+            <div>
+                <img src="{{ message.image.url }}" class="message-image" />
+            </div>
+            {% endif %}
             <div class="sent-message my-3">
                 <p>{{ message.body }}</p>
             </div>
-            {% elif message.receiver_user == request.user %}
+        </div>
+        {% elif message.receiver_user == request.user %}
+        <div class="col-md-12 offset-6">
+            {% if message.image %}
+            <div class="message-receiver-container ms-auto">
+                <img src="{{ message.image.url }}" class="message-image" />
+            </div>
+            {% endif %}
             <div class="received-message my-3">
                 <p>{{ message.body }}</p>
             </div>
-            {% endif %}
         </div>
+        {% endif %}
     </div>
     {% endfor %}
 
