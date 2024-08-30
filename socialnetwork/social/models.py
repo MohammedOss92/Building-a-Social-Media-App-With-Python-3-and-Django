@@ -6,6 +6,8 @@ from django.dispatch import receiver
 
 # Create your models here.
 
+
+
 class Post(models.Model):
     shared_body = models.TextField(blank=True, null=True)
     body = models.TextField()
@@ -18,13 +20,29 @@ class Post(models.Model):
     shared_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='+')
     likes = models.ManyToManyField(User, blank=True, related_name='likes')
     dislikes = models.ManyToManyField(User, blank=True, related_name='dislikes')
+    tags = models.ManyToManyField('Tag', blank=True)
+
+    def create_tags(self):
+        for word in self.body.split():
+            if word.startswith('#'):
+                tag, created = Tag.objects.get_or_create(name=word[1:])
+                self.tags.add(tag)
+
+        if self.shared_body:
+            for word in self.shared_body.split():
+                if word.startswith('#'):
+                    tag, created = Tag.objects.get_or_create(name=word[1:])
+                    self.tags.add(tag)
+
+        self.save()
 
     class Meta:
-	    ordering = ['-created_on', '-shared_on']
+        ordering = ['-created_on', '-shared_on']
 
 
 
 # نموذج يمثل التعليق (Comment) في قاعدة البيانات
+
 class Comment(models.Model):
     # النص الفعلي للتعليق
     comment = models.TextField()
@@ -47,6 +65,14 @@ class Comment(models.Model):
     # إذا كان هذا التعليق ردًا على تعليق آخر، فإنه يشير إلى التعليق الأب (parent)
     # العلاقة مع الذات (self) تشير إلى التعليق الأب إذا كان موجودًا
     parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='+')
+    tags = models.ManyToManyField('Tag', blank=True)
+
+    def create_tags(self):
+        for word in self.comment.split():
+            if word.startswith('#'):
+                tag, created = Tag.objects.get_or_create(name=word[1:])
+                self.tags.add(tag)
+        self.save()
 
     # خاصية ترجع جميع التعليقات الفرعية (الأطفال) المرتبطة بهذا التعليق، مرتبة حسب تاريخ الإنشاء تنازليًا
     @property
@@ -60,6 +86,47 @@ class Comment(models.Model):
         if self.parent is None:
             return True
         return False
+
+    class Meta:
+        ordering = ['-created_on']
+
+
+# نموذج يمثل التعليق (Comment) في قاعدة البيانات
+# class Comment(models.Model):
+#     # النص الفعلي للتعليق
+#     comment = models.TextField()
+
+#     # تاريخ ووقت إنشاء التعليق، يتم تعيينه تلقائيًا إلى الوقت الحالي
+#     created_on = models.DateTimeField(default=timezone.now)
+
+#     # المستخدم الذي كتب التعليق، يمثل علاقة خارجية مع نموذج المستخدم (User)
+#     author = models.ForeignKey(User, on_delete=models.CASCADE)
+
+#     # المنشور المرتبط بالتعليق، يمثل علاقة خارجية مع نموذج المنشور (Post)
+#     post = models.ForeignKey('Post', on_delete=models.CASCADE)
+
+#     # المستخدمون الذين قاموا بإعجاب التعليق، يمثل علاقة متعددة (ManyToMany) مع نموذج المستخدم
+#     likes = models.ManyToManyField(User, blank=True, related_name='comment_likes')
+
+#     # المستخدمون الذين قاموا بعدم إعجاب التعليق، يمثل علاقة متعددة (ManyToMany) مع نموذج المستخدم
+#     dislikes = models.ManyToManyField(User, blank=True, related_name='comment_dislikes')
+
+#     # إذا كان هذا التعليق ردًا على تعليق آخر، فإنه يشير إلى التعليق الأب (parent)
+#     # العلاقة مع الذات (self) تشير إلى التعليق الأب إذا كان موجودًا
+#     parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='+')
+
+#     # خاصية ترجع جميع التعليقات الفرعية (الأطفال) المرتبطة بهذا التعليق، مرتبة حسب تاريخ الإنشاء تنازليًا
+#     @property
+#     def children(self):
+#         return Comment.objects.filter(parent=self).order_by('-created_on').all()
+
+#     # خاصية تحدد ما إذا كان هذا التعليق هو تعليق أب (parent) أم لا
+#     @property
+#     def is_parent(self):
+#         # إذا لم يكن هناك تعليق أب، فهذا التعليق هو التعليق الأب
+#         if self.parent is None:
+#             return True
+#         return False
 
     
     # comment = models.TextField()
@@ -159,3 +226,9 @@ class MessageModel(models.Model):
 
 class Image(models.Model):
 	image = models.ImageField(upload_to='uploads/post_photos', blank=True, null=True)
+
+
+
+
+class Tag(models.Model):
+	name = models.CharField(max_length=255)

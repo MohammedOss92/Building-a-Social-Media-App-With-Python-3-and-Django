@@ -57,3 +57,28 @@ function removeNotification(removeNotificationURL, redirectURL) {
     xmlhttp.setRequestHeader("X-CSRFToken", csrftoken);
     xmlhttp.send();
 }
+
+
+function formatTags() {
+    const elements = document.getElementsByClassName('body');
+    for (let i = 0; i < elements.length; i++) {
+        let bodyText = elements[i].children[0].innerHTML;
+
+        let words = bodyText.split(' ');
+
+        for (let j = 0; j < words.length; j++) {
+            if (words[j].startsWith('#')) {
+                // قم بإنشاء الرابط هنا
+                let tag = words[j].substring(1); // إزالة علامة #
+                words[j] = `<a href="/tags/${encodeURIComponent(tag)}/">${words[j]}</a>`;
+            }
+        }
+
+        elements[i].children[0].innerHTML = words.join(' ');
+    }
+}
+
+// استدعاء الدالة بعد تحميل الصفحة
+window.onload = formatTags;
+
+formatTags();
