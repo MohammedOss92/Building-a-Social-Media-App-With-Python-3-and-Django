@@ -7,13 +7,20 @@ from django.dispatch import receiver
 # Create your models here.
 
 class Post(models.Model):
+    shared_body = models.TextField(blank=True, null=True)
     body = models.TextField()
     #add
-    image = models.ImageField(upload_to='uploads/post_photos', blank=True, null=True)
+    #image = models.ImageField(upload_to='uploads/post_photos', blank=True, null=True)
+    image = models.ManyToManyField('Image', blank=True)
     created_on = models.DateTimeField(default=timezone.now)
+    shared_on = models.DateTimeField(blank=True, null=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    shared_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='+')
     likes = models.ManyToManyField(User, blank=True, related_name='likes')
     dislikes = models.ManyToManyField(User, blank=True, related_name='dislikes')
+
+    class Meta:
+	    ordering = ['-created_on', '-shared_on']
 
 
 
@@ -149,3 +156,6 @@ class MessageModel(models.Model):
     # `is_read`: حقل منطقي (Boolean) يشير إلى ما إذا كانت الرسالة قد تمت قراءتها أم لا. الافتراضي هو `False`.
     is_read = models.BooleanField(default=False)
 
+
+class Image(models.Model):
+	image = models.ImageField(upload_to='uploads/post_photos', blank=True, null=True)

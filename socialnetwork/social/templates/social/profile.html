@@ -16,15 +16,14 @@
                 <h3 class="py-4">{{ profile.name }}
                     <span>
                         {% if request.user == user %}
-                        <a href="{% url 'profile-edit' profile.pk %}" class="edit-color"><i class="far fa-edit"></i></a>
+                            <a href="{% url 'profile-edit' profile.pk %}" class="edit-color"><i class="far fa-edit"></i></a>
                         {% endif %}
                     </span>
                     {% else %}
                     <h3 class="py-4">{{ user.username }}
                         <span>
                             {% if request.user == user %}
-                            <a href="{% url 'profile-edit' profile.pk %}" class="edit-color"><i
-                                    class="far fa-edit"></i></a>
+                                <a href="{% url 'profile-edit' profile.pk %}" class="edit-color"><i class="far fa-edit"></i></a>
                             {% endif %}
                         </span>
                     </h3>
@@ -33,12 +32,12 @@
             </div>
 
             {% if profile.bio %}
-            <p>My bio: {{ profile.bio }}</p>
+            <p>{{ profile.bio }}</p>
             {% endif %}
 
             <div class="mb-3">
-                <a href="{% url 'list-followers' profile.pk %}" class="post-link">Followers: {{number_of_followers}}</a>
-
+                <a href="{% url 'list-followers' profile.pk %}" class="post-link">Followers: {{ number_of_followers }}</a>
+                
             </div>
         </div>
     </div>
@@ -54,18 +53,18 @@
             {% endif %}
 
             {% if user == request.user %}
-            {% else %}
-            {% if is_following %}
-            <form method="POST" action="{% url 'remove-follower' profile.pk %}">
-                {% csrf_token %}
-                <button class="btn btn-outline-danger" type="submit">Unfollow</button>
-            </form>
-            {% else %}
-            <form method="POST" action="{% url 'add-follower' profile.pk %}">
-                {% csrf_token %}
-                <button class="btn btn-outline-success" type="submit">Follow</button>
-            </form>
-            {% endif %}
+                {% else %}
+                {% if is_following %}
+                    <form method="POST" action="{% url 'remove-follower' profile.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-danger" type="submit">Unfollow</button>
+                    </form>
+                    {% else %}
+                    <form method="POST" action="{% url 'add-follower' profile.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-success" type="submit">Follow</button>
+                    </form>
+                {% endif %}
             {% endif %}
         </div>
     </div>
@@ -75,18 +74,21 @@
         <div class="col-md-8 col-sm-12 border-bottom">
             <div>
                 <a href="{% url 'profile' post.author.profile.pk %}">
-                    <img class="round-circle post-img" height="30" width="30"
-                        src="{{ post.author.profile.picture.url }}" />
+                    <img class="round-circle post-img" height="30" width="30" src="{{ post.author.profile.picture.url }}" />
                 </a>
                 <p class="post-text">
-                    <a class="text-primary post-link"
-                        href="{% url 'profile' post.author.profile.pk %}">@{{post.author}}</a> {{post.created_on}}
+                    <a class="text-primary post-link" href="{% url 'profile' post.author.profile.pk %}">@{{ post.author }}</a> {{ post.created_on }}
                 </p>
             </div>
             <div class="position-relative">
-                <!-- هذا الاسم في db موجود اسم الحقلimage -->
-                {% if post.image %}
-                <img src="{{ post.image.url }}" class="post-image" />
+                {% if post.image.count > 0 %}
+                  <div class="row">
+                    {% for img in post.image.all %}
+                        <div class="col-md-4 col-xs-12">
+                            <img src="{{ img.image.url }}" class="post-image" />
+                        </div>
+                    {% endfor %}
+                  </div>
                 {% endif %}
                 <p>{{ post.body }}</p>
                 <a href="{% url 'post-detail' post.pk %}" class="stretched-link"></a>
@@ -108,7 +110,7 @@
                         <i class="far fa-thumbs-down"> <span>{{ post.dislikes.all.count }}</span></i>
                     </button>
                 </form>
-            </div>
+        </div>
         </div>
     </div>
     {% endfor %}
