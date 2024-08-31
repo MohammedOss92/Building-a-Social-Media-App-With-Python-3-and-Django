@@ -59,7 +59,7 @@ function removeNotification(removeNotificationURL, redirectURL) {
 }
 
 
-function formatTags() {
+function formatTags2() {
     const elements = document.getElementsByClassName('body');
     for (let i = 0; i < elements.length; i++) {
         let bodyText = elements[i].children[0].innerHTML;
@@ -75,6 +75,20 @@ function formatTags() {
         }
 
         elements[i].children[0].innerHTML = words.join(' ');
+    }
+}
+function formatTags() {
+    const elements = document.getElementsByClassName('body');
+    for (let i = 0; i < elements.length; i++) {
+        let bodyText = elements[i].innerHTML;  // استخدم innerHTML بدلاً من innerText
+
+        // استخدام تعبير منتظم لاستبدال الوسوم
+        const replacedText = bodyText.replace(/(#\w+)/g, (match) => {
+            const tag = match.substring(1); // إزالة علامة #
+            return `<a href="/tags/${encodeURIComponent(tag)}/">${match}</a>`;
+        });
+
+        elements[i].innerHTML = replacedText;  // تحديث النص داخل العنصر
     }
 }
 

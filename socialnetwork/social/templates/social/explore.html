@@ -1,28 +1,32 @@
 {% extends 'landing/base.html' %}
 {% load crispy_forms_tags %}
-{% load static %}
-
 {% block content %}
+
 <div class="container">
+    <div class="row mt-5">
+        <div class="col-md-5 col-sm-6">
+            <a href="{% url 'post-list' %}" class="btn btn-light">Back To Feed</a>
+        </div>
+    </div>
     <div class="row justify-content-center mt-3">
-        <div class="col-md-5 col-sm-12 border-bottom">
-            <h5>Add a Post!</h5>
-        </div>
-    </div>
-
-    <div class="row justify-content-center mt-3 mb-5">
-        <div class="col-md-5 col-sm-12 border-bottom">
-            <form method="POST" enctype="multipart/form-data">
+        <div class="col-md-5 col-sm-12">
+            {% if tag %}
+            <h3>Explore #{{ tag.name }} Posts</h3>
+            <p class="mb-3">Most recent posts tagged with {{ tag.name }}</p>
+            {% else %}
+            <h3>Explore Posts</h3>
+            <p class="mb-3">Explore tags to find new posts</p>
+            {% endif %}
+            <form method="POST" class="mb-5">
                 {% csrf_token %}
-                {{ form | crispy }}
-                <div class="d-grid gap-2">
-                    <button class="btn btn-success mt-3">Submit!</button>
-                </div>
+                {{ explore_form | crispy }}
             </form>
+
         </div>
     </div>
 
-    {% for post in post_list %}
+    {% for post in posts %}
+    {% if '#' in post.body %}
     <div class="row justify-content-center mt-3">
         <div class="col-md-5 col-sm-12 border-bottom position-relative">
             {% if post.shared_user %}
@@ -45,7 +49,8 @@
                 </a>
                 <p class="post-text">
                     <a class="text-primary post-link"
-                        href="{% url 'profile' post.author.profile.pk %}">@{{post.author}}</a> {{ post.created_on }}
+                        href="{% url 'profile' post.author.profile.pk %}">@{{post.author}}</a>
+                    {{ post.created_on }}
                     <span onclick="shareToggle('{{ post.pk }}')"><i class="far fa-share-square share-btn"></i></span>
                 </p>
             </div>
@@ -68,7 +73,8 @@
                 </a>
                 <p class="post-text">
                     <a class="text-primary post-link"
-                        href="{% url 'profile' post.author.profile.pk %}">@{{post.author}}</a> {{ post.created_on }}
+                        href="{% url 'profile' post.author.profile.pk %}">@{{post.author}}</a>
+                    {{ post.created_on }}
                 </p>
             </div>
             {% endif %}
@@ -106,8 +112,12 @@
                 </form>
             </div>
         </div>
-        {% endfor %}
     </div>
+    {% endif %}
+    {% endfor %}
+
+
+
     <script>
         function shareToggle(postId) {
             var form = document.getElementById(postId);
@@ -121,7 +131,27 @@
         }
 
 
-        function formatTags2() {
+        // function formatTags() {
+        //     const elements = document.getElementsByClassName('body');
+        //     for (let i = 0; i < elements.length; i++) {
+        //         let bodyText = elements[i].children[0].innerHTML;  // استخدم innerHTML بدلاً من innerText للحفاظ على التنسيق الأصلي
+
+        //         let words = bodyText.split(' ');
+
+        //         for (let j = 0; j < words.length; j++) {
+        //             if (words[j][0] === '#') {
+        //                 // استخدم التعبير النمطي مرة واحدة لجميع الكلمات التي تبدأ بـ #
+        //                 bodyText = bodyText.replace(
+        //                     new RegExp(`\\b${words[j]}\\b`, 'g'),
+        //                     `<a href="/social/explore?query=${words[j].substring(1)}">${words[j]}</a>`
+        //                 );
+        //             }
+        //         }
+
+        //         elements[i].children[0].innerHTML = bodyText;  // تحديث النص داخل العنصر
+        //     }
+        // }
+        function formatTags() {
             const elements = document.getElementsByClassName('body');
             for (let i = 0; i < elements.length; i++) {
                 let bodyText = elements[i].innerHTML;  // استخدم innerHTML بدلاً من innerText
@@ -134,23 +164,9 @@
                 elements[i].innerHTML = replacedText;
             }
         }
-        function formatTags() {
-            const elements = document.getElementsByClassName('body');
-            for (let i = 0; i < elements.length; i++) {
-                let bodyText = elements[i].innerHTML;  // استخدم innerHTML بدلاً من innerText
-
-                // استخدام تعبير منتظم لاستبدال الوسوم
-                const replacedText = bodyText.replace(/(#\w+)/g, (match) => {
-                    const tag = match.substring(1); // إزالة علامة #
-                    return `<a href="/tags/${encodeURIComponent(tag)}/">${match}</a>`;
-                });
-
-                elements[i].innerHTML = replacedText;  // تحديث النص داخل العنصر
-            }
-        }
 
         // استدعاء الدالة بعد تحميل الصفحة
         window.onload = formatTags;
 
     </script>
-    {% endblock content %}
+    {% endblock %}
