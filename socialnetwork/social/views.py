@@ -10,6 +10,10 @@ from .forms import *
 from django.views.generic.edit import UpdateView, DeleteView
 from django.contrib import messages
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
+import json
 
 
 # Create your views here.
@@ -335,7 +339,7 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin,DeleteView):
         return self.request.user == comment.author
     
 
-class ProfileView(View):
+class ProfileView(LoginRequiredMixin,View):
     def get(self, request, pk, *args, **kwargs):
         
         # الحصول على كائن الملف الشخصي باستخدام المعرف (pk)
@@ -380,9 +384,21 @@ class ProfileView(View):
         return render(request, 'social/profile.html', context)
     
 
+# class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+#     model = UserProfile
+#     fields = ['name', 'bio', 'birth_date', 'location', 'picture']
+#     template_name = 'social/profile_edit.html'
+
+#     def get_success_url(self):
+#         pk = self.kwargs['pk']
+#         return reverse_lazy('profile', kwargs={'pk': pk})
+
+#     def test_func(self):
+#         profile = self.get_object()
+#         return self.request.user == profile.user
 class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = UserProfile
-    fields = ['name', 'bio', 'birth_date', 'location', 'picture']
+    form_class = UserProfileForm  # استخدم النموذج المعدل هنا
     template_name = 'social/profile_edit.html'
 
     def get_success_url(self):
@@ -392,6 +408,7 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         profile = self.get_object()
         return self.request.user == profile.user
+
     
 
 class AddFollower(LoginRequiredMixin, View):
@@ -490,7 +507,7 @@ class AddDislike(LoginRequiredMixin, View):
 
 
 # تعريف View للبحث عن المستخدمين
-class UserSearch(View):
+class UserSearch(LoginRequiredMixin,View):
     def get(self, request, *args, **kwargs):
         # الحصول على قيمة البحث من المستخدم (من الـ GET request)
         query = self.request.GET.get('query')
@@ -510,7 +527,7 @@ class UserSearch(View):
         return render(request, 'social/search.html', context)
     
     
-class ListFollowers(View):
+class ListFollowers(LoginRequiredMixin,View):
     def get(self, request, pk, *args, **kwargs):
         # الحصول على ملف تعريف المستخدم بناءً على الـ primary key (pk) المرسل في الطلب
         profile = UserProfile.objects.get(pk=pk)
@@ -611,7 +628,7 @@ class AddCommentDislike(LoginRequiredMixin, View):
         return HttpResponseRedirect(next)
 
 
-class PostNotification(View):
+class PostNotification(LoginRequiredMixin,View):
     def get(self, request, notification_pk, post_pk, *args, **kwargs):
         # الحصول على الإشعار المحدد باستخدام معرف الإشعار (notification_pk)
         notification = Notification.objects.get(pk=notification_pk)
@@ -627,7 +644,7 @@ class PostNotification(View):
         return redirect('post-detail', pk=post_pk)
 
 
-class FollowNotification(View):
+class FollowNotification(LoginRequiredMixin,View):
     def get(self, request, notification_pk, profile_pk, *args, **kwargs):
         # الحصول على الإشعار المحدد باستخدام معرف الإشعار (notification_pk)
         notification = Notification.objects.get(pk=notification_pk)
@@ -642,7 +659,7 @@ class FollowNotification(View):
         # إعادة توجيه المستخدم إلى صفحة الملف الشخصي للمستخدم الذي تم متابعته
         return redirect('profile', pk=profile_pk)
     
-class ThreadNotification(View):
+class ThreadNotification(LoginRequiredMixin,View):
     def get(self, request, notification_pk, object_pk, *args, **kwargs):
         notification = Notification.objects.get(pk=notification_pk)
         thread = ThreadModel.objects.get(pk=object_pk)
@@ -653,7 +670,7 @@ class ThreadNotification(View):
         return redirect('thread', pk=object_pk)
 
 
-class RemoveNotification(View):
+class RemoveNotification(LoginRequiredMixin,View):
     def delete(self, request, notification_pk, *args, **kwargs):
         # الحصول على الإشعار المحدد باستخدام معرف الإشعار (notification_pk)
         notification = Notification.objects.get(pk=notification_pk)
@@ -666,7 +683,7 @@ class RemoveNotification(View):
         return HttpResponse('Success', content_type='text/plain')
 
 
-class ListThreads(View):
+class ListThreads(LoginRequiredMixin,View):
     #نستخدم Q من django.db.models لإنشاء شرط تصفية معقد يسمح لنا بالبحث عن المحادثات التي يكون فيها المستخدم الحالي إما منشئ المحادثة (user) أو المستقبل للمحادثة (receiver).
 
     # الدالة `get` تُنفذ عند إرسال طلب GET إلى هذا العرض.
@@ -683,7 +700,7 @@ class ListThreads(View):
         # نقوم بعرض صفحة HTML (`inbox.html`) باستخدام القالب `social/inbox.html`، وتمرير البيانات المخزنة في `context` إلى القالب.
         return render(request, 'social/inbox.html', context)
 
-class CreateThread(View):
+class CreateThread(LoginRequiredMixin,View):
     # الدالة `get` تُنفذ عند إرسال طلب GET إلى هذا العرض.
     def get(self, request, *args, **kwargs):
         # نقوم بإنشاء نموذج (form) فارغ من النموذج `ThreadForm`.
@@ -735,7 +752,7 @@ class CreateThread(View):
             return redirect('create-thread')
 
 
-class ThreadView(View):
+class ThreadView(LoginRequiredMixin,View):
     # الدالة `get` تُنفذ عند إرسال طلب GET إلى هذا العرض.
     def get(self, request, pk, *args, **kwargs):
         # نقوم بإنشاء نموذج فارغ للرسالة ليتم عرضه في صفحة المحادثة.
@@ -759,7 +776,7 @@ class ThreadView(View):
         return render(request, 'social/thread.html', context)
 
 
-class CreateMessage(View):
+class CreateMessage(LoginRequiredMixin,View):
     def post(self, request, pk, *args, **kwargs):
         form = MessageForm(request.POST, request.FILES)
         thread = ThreadModel.objects.get(pk=pk)
@@ -861,3 +878,9 @@ class Explore(View):
                 }
             return redirect(f'/social/explore?query={query}')
         return redirect('/social/explore')
+    
+
+#يعني الكلاس الذي يحتوي post get يكون cbsv
+
+# واستخدم معه LoginRequiredMixin
+#fbsv لا يحتوي get post واستخدم معه @loginrequird
