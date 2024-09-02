@@ -20,6 +20,19 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ['body']
 
+# class CommentForm(forms.ModelForm):
+#     comment = forms.CharField(
+#         label='',
+#         widget=forms.Textarea(
+#             attrs={'rows': '3',
+#                    'placeholder': 'Say Something...'}
+#         ))
+
+#     class Meta:
+#         model = Comment
+#         fields = ['comment']
+        
+
 class CommentForm(forms.ModelForm):
     comment = forms.CharField(
         label='',
@@ -28,9 +41,12 @@ class CommentForm(forms.ModelForm):
                    'placeholder': 'Say Something...'}
         ))
 
+    image = forms.ImageField(required=False)  # إضافة حقل الصورة
+
     class Meta:
         model = Comment
-        fields = ['comment']
+        fields = ['comment', 'image']
+
 
 class ThreadForm(forms.Form):
     username = forms.CharField(label='', max_length=100)

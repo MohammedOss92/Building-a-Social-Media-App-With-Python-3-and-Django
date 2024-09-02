@@ -4,6 +4,14 @@
 
 {% block content %}
 <div class="container">
+    {% if messages %}
+    <div>
+        {% for message in messages %}
+        <div class="alert {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="row mt-5">
         <div class="col-md-5 col-sm-6">
             <a href="{% url 'post-list' %}" class="btn btn-light">Back To Feed</a>
@@ -61,7 +69,7 @@
 
     <div class="row justify-content-center mt-3 mb-5">
         <div class="col-md-5 col-sm-12">
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ form | crispy }}
                 <div class="d-grid gap-2">
@@ -70,6 +78,7 @@
             </form>
         </div>
     </div>
+
     {% for comment in comments %}
     {% if comment.is_parent %}
     <div class="row justify-content-center mt-3 mb-5">
@@ -81,8 +90,9 @@
                         src="{{ comment.author.profile.picture.url }}" />
                 </a>
                 <p class="post-text">
-                    <a class="text-primary post-link" href="{% url 'profile' comment.author.profile.pk %}">@{{
-                        comment.author }}</a> {{ comment.created_on }}
+                    <a class="text-primary post-link"
+                        href="{% url 'profile' comment.author.profile.pk %}">@{{comment.author }}</a>
+                    {{ comment.created_on }}
                 </p>
             </div>
             {% if request.user == comment.author %}
@@ -90,6 +100,12 @@
             {% endif %}
             </p>
             <p>{{ comment.comment }}</p>
+
+            {% if comment.image %}
+            <div>
+                <img src="{{ comment.image.url }}" alt="Comment Image" class="img-fluid">
+            </div>
+            {% endif %}
 
             <div class="d-flex flex-row">
                 <form method="POST" action="{% url 'comment-like' post.pk comment.pk %}">
@@ -136,8 +152,9 @@
                         src="{{ child_comment.author.profile.picture.url }}" />
                 </a>
                 <p class="post-text">
-                    <a class="text-primary post-link" href="{% url 'profile' child_comment.author.profile.pk %}">@{{
-                        child_comment.author }}</a> {{ child_comment.created_on }}
+                    <a class="text-primary post-link"
+                        href="{% url 'profile' child_comment.author.profile.pk %}">@{{child_comment.author }}</a>
+                    {{ child_comment.created_on }}
                 </p>
             </div>
             {% if request.user == child_comment.author %}

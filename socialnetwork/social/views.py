@@ -240,7 +240,45 @@ class PostListView(LoginRequiredMixin, View):
 #         return render(request, 'social/post_detail.html', context)
 
     
-class PostDetailView(LoginRequiredMixin,  View):
+# class PostDetailView(LoginRequiredMixin,  View):
+#     def get(self, request, pk, *args, **kwargs):
+#         post = Post.objects.get(pk=pk)
+#         form = CommentForm()
+        
+#         comments = Comment.objects.filter(post=post).order_by('-created_on')
+
+#         context = {
+#             'post': post,
+#             'form': form,
+#             'comments': comments,
+#         }
+
+#         return render(request, 'social/post_detail.html', context)
+
+#     def post(self, request, pk, *args, **kwargs):
+#         post = Post.objects.get(pk=pk)
+#         form = CommentForm(request.POST)
+
+#         if form.is_valid():
+#             new_comment = form.save(commit=False)
+#             new_comment.author = request.user
+#             new_comment.post = post
+#             new_comment.save()
+
+#             new_comment.create_tags()
+        
+#         comments = Comment.objects.filter(post=post).order_by('-created_on')
+#         notification = Notification.objects.create(notification_type=2, from_user=request.user, to_user=post.author, post=post)
+
+#         context = {
+#             'post': post,
+#             'form': form,
+#             'comments': comments,
+#         }
+
+#         return render(request, 'social/post_detail.html', context)
+    
+class PostDetailView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         post = Post.objects.get(pk=pk)
         form = CommentForm()
@@ -257,7 +295,7 @@ class PostDetailView(LoginRequiredMixin,  View):
 
     def post(self, request, pk, *args, **kwargs):
         post = Post.objects.get(pk=pk)
-        form = CommentForm(request.POST)
+        form = CommentForm(request.POST, request.FILES)  # إضافة request.FILES
 
         if form.is_valid():
             new_comment = form.save(commit=False)
@@ -266,6 +304,14 @@ class PostDetailView(LoginRequiredMixin,  View):
             new_comment.save()
 
             new_comment.create_tags()
+
+            # عرض رسالة نجاح
+            messages.success(request, "تم إضافة التعليق بنجاح.")
+        else:
+            # عرض رسالة خطأ مع تفاصيل الأخطاء
+            messages.error(request, "حدث خطأ أثناء إضافة التعليق.")
+            for error in form.errors.values():
+                messages.error(request, error)
         
         comments = Comment.objects.filter(post=post).order_by('-created_on')
         notification = Notification.objects.create(notification_type=2, from_user=request.user, to_user=post.author, post=post)
@@ -277,6 +323,8 @@ class PostDetailView(LoginRequiredMixin,  View):
         }
 
         return render(request, 'social/post_detail.html', context)
+
+
     
 class PostEditView(LoginRequiredMixin, UserPassesTestMixin,UpdateView):
     model = Post
