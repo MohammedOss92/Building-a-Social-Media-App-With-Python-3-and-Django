@@ -145,7 +145,6 @@
     {% for child_comment in comment.children %}
     <div class="row justify-content-center mt-3 mb-5 child-comment">
         <div class="col-md-5 col-sm-12 border-bottom">
-            <p>
             <div>
                 <a href="{% url 'profile' child_comment.author.profile.pk %}">
                     <img class="round-circle post-img" height="30" width="30"
@@ -153,19 +152,25 @@
                 </a>
                 <p class="post-text">
                     <a class="text-primary post-link"
-                        href="{% url 'profile' child_comment.author.profile.pk %}">@{{child_comment.author }}</a>
-                    {{ child_comment.created_on }}
+                        href="{% url 'profile' child_comment.author.profile.pk %}">@{{child_comment.author}}</a>{{child_comment.created_on}}
                 </p>
             </div>
             {% if request.user == child_comment.author %}
-            <a href="{% url 'comment-delete' post.pk child_comment.pk %}" class="edit-color"><i
-                    class="fas fa-trash"></i></a>
+            <a href="{% url 'comment-delete' post.pk child_comment.pk %}" class="edit-color">
+                <i class="fas fa-trash"></i>
+            </a>
             {% endif %}
-            </p>
             <p>{{ child_comment.comment }}</p>
+
+            {% if child_comment.image %}
+            <div>
+                <img src="{{ child_comment.image.url }}" alt="Comment Image" class="img-fluid">
+            </div>
+            {% endif %}
         </div>
     </div>
     {% endfor %}
+
     {% endif %}
     {% endfor %}
 </div>

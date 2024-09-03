@@ -1,0 +1,13 @@
+{% extends 'landing/base.html' %}
+
+
+{% block content %}
+<h1>صوري القديمة والجديدة</h1>
+<div class="profile-images">
+    {% for image in images %}
+    {% if image %}
+    <img src="{{ image.url }}" alt="Profile Image">
+    {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

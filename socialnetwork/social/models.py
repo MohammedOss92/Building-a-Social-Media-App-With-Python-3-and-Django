@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save,pre_save
 from django.dispatch import receiver
 
 # Create your models here.
@@ -188,14 +188,29 @@ class Comment(models.Model):
     # author = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
+# class UserProfile(models.Model):
+#     user = models.OneToOneField(User, primary_key=True, verbose_name='user', related_name='profile', on_delete=models.CASCADE)
+#     name = models.CharField(max_length=30, blank=True, null=True)
+#     bio = models.TextField(max_length=500, blank=True, null=True)
+#     birth_date=models.DateField(null=True, blank=True)
+#     location = models.CharField(max_length=100, blank=True, null=True)
+#     picture = models.ImageField(upload_to='uploads/profile_pictures', default='uploads/profile_pictures/default.png', blank=True)
+#     followers = models.ManyToManyField(User, blank=True, related_name='followers')
 class UserProfile(models.Model):
     user = models.OneToOneField(User, primary_key=True, verbose_name='user', related_name='profile', on_delete=models.CASCADE)
     name = models.CharField(max_length=30, blank=True, null=True)
     bio = models.TextField(max_length=500, blank=True, null=True)
-    birth_date=models.DateField(null=True, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
     location = models.CharField(max_length=100, blank=True, null=True)
     picture = models.ImageField(upload_to='uploads/profile_pictures', default='uploads/profile_pictures/default.png', blank=True)
     followers = models.ManyToManyField(User, blank=True, related_name='followers')
+
+@receiver(pre_save, sender=UserProfile)
+def save_previous_profile_picture(sender, instance, **kwargs):
+    if instance.pk:
+        old_picture = UserProfile.objects.get(pk=instance.pk).picture
+        if old_picture != instance.picture:
+            UserProfileImage.objects.create(user=instance.user, image=old_picture)
 
 
 @receiver(post_save, sender=User)
@@ -216,6 +231,15 @@ def save_user_profile(sender, instance, **kwargs):
 # create_user_profile: ينشئ ملفًا شخصيًا جديدًا عندما يتم إنشاء مستخدم جديد.
 # save_user_profile: يحفظ ملف المستخدم الشخصي المرتبط إذا كان موجودًا، مما يضمن مزامنة أي تغييرات بين User و UserProfile.
     
+
+class UserProfileImage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='profile_images')
+    image = models.ImageField(upload_to='uploads/profile_pictures')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.uploaded_at}"
+
 
 class Notification(models.Model):
     # نوع الإشعار: 1 = إعجاب، 2 = تعليق، 3 = متابعة

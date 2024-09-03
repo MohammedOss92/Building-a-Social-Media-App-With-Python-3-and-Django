@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.http import HttpResponseRedirect,HttpResponse
@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 import json
+from django.views.generic import ListView
 
 
 # Create your views here.
@@ -456,8 +457,35 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         profile = self.get_object()
         return self.request.user == profile.user
+    
+@login_required
+def user_profile_images_view(request):
+    # الحصول على جميع الصور القديمة
+    images = list(UserProfileImage.objects.filter(user=request.user))
+    # إضافة الصورة الحالية
+    current_profile = UserProfile.objects.get(user=request.user)
+    if current_profile.picture:
+        images.insert(0, current_profile.picture)
+    
+    context = {
+        'images': images
+    }
+    return render(request, 'social/profile_image.html', context)
 
     
+class SetProfileImageView(View):
+    def get(self, request, image_id):
+        image = get_object_or_404(UserProfileImage, id=image_id, user=request.user)
+        profile = UserProfile.objects.get(user=request.user)
+        profile.picture = image.image
+        profile.save()
+        return redirect('profile_images')  # عدل الرابط بناءً على URL إعادة التوجيه
+
+class DeleteImageView(View):
+    def get(self, request, image_id):
+        image = get_object_or_404(UserProfileImage, id=image_id, user=request.user)
+        image.delete()
+        return redirect('profile_images')  # عدل الرابط بناءً على URL إعادة التوجيه
 
 class AddFollower(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
@@ -594,11 +622,28 @@ class ListFollowers(LoginRequiredMixin,View):
 
 
 
+# class CommentReplyView(LoginRequiredMixin, View):
+#     def post(self, request, post_pk, pk, *args, **kwargs):
+#         post = Post.objects.get(pk=post_pk)
+#         parent_comment = Comment.objects.get(pk=pk)
+#         form = CommentForm(request.POST)
+
+#         if form.is_valid():
+#             new_comment = form.save(commit=False)
+#             new_comment.author = request.user
+#             new_comment.post = post
+#             new_comment.parent = parent_comment
+#             new_comment.save()
+
+#         notification = Notification.objects.create(notification_type=2, from_user=request.user, to_user=parent_comment.author, comment=new_comment)
+
+#         return redirect('post-detail', pk=post_pk)
+    
 class CommentReplyView(LoginRequiredMixin, View):
     def post(self, request, post_pk, pk, *args, **kwargs):
         post = Post.objects.get(pk=post_pk)
         parent_comment = Comment.objects.get(pk=pk)
-        form = CommentForm(request.POST)
+        form = CommentForm(request.POST, request.FILES)  # تأكد من تضمين الملفات
 
         if form.is_valid():
             new_comment = form.save(commit=False)
@@ -607,9 +652,22 @@ class CommentReplyView(LoginRequiredMixin, View):
             new_comment.parent = parent_comment
             new_comment.save()
 
-        notification = Notification.objects.create(notification_type=2, from_user=request.user, to_user=parent_comment.author, comment=new_comment)
+            # إنشاء إشعار
+            notification = Notification.objects.create(
+                notification_type=2,
+                from_user=request.user,
+                to_user=parent_comment.author,
+                comment=new_comment
+            )
+
+             # إضافة رسالة تنبيه
+            messages.success(request, "تم إضافة تعليقك بنجاح!")
+
+        else:
+            messages.error(request, "فشل في إضافة التعليق. يرجى التحقق من التفاصيل.")
 
         return redirect('post-detail', pk=post_pk)
+
     
     
 
@@ -927,6 +985,9 @@ class Explore(View):
             return redirect(f'/social/explore?query={query}')
         return redirect('/social/explore')
     
+
+
+
 
 #يعني الكلاس الذي يحتوي post get يكون cbsv
 

@@ -30,6 +30,9 @@ urlpatterns = [
     path('inbox/<int:pk>/', ThreadView.as_view(), name='thread'),
     path('inbox/<int:pk>/create-message/', CreateMessage.as_view(), name='create-message'),
     path('inbox/create-thread/', CreateThread.as_view(), name='create-thread'),
+    path('my-images/', user_profile_images_view, name='my_images'),
+    path('set_profile_image/<int:image_id>/', SetProfileImageView.as_view(), name='set_profile_image'),
+    path('delete_image/<int:image_id>/', DeleteImageView.as_view(), name='delete_image'),
 
 
 ]
