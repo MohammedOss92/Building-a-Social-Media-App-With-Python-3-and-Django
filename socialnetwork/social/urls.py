@@ -33,6 +33,8 @@ urlpatterns = [
     path('my-images/', user_profile_images_view, name='my_images'),
     path('set_profile_image/<int:image_id>/', SetProfileImageView.as_view(), name='set_profile_image'),
     path('delete_image/<int:image_id>/', DeleteImageView.as_view(), name='delete_image'),
+    path('profile_image/', user_profile_images_view, name='profile_image'),
+
 
 
 ]

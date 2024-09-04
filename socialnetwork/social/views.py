@@ -462,15 +462,21 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 def user_profile_images_view(request):
     # الحصول على جميع الصور القديمة
     images = list(UserProfileImage.objects.filter(user=request.user))
-    # إضافة الصورة الحالية
+
+    # الحصول على الصورة الحالية من ملف التعريف
     current_profile = UserProfile.objects.get(user=request.user)
     if current_profile.picture:
+        # إذا كانت الصورة الحالية موجودة بالفعل في القائمة، قم بإزالتها لتجنب التكرار
+        images = [image for image in images if image.image != current_profile.picture]
+        # ثم أضف الصورة الحالية إلى أول القائمة
         images.insert(0, current_profile.picture)
-    
+
     context = {
         'images': images
     }
     return render(request, 'social/profile_image.html', context)
+
+
 
     
 class SetProfileImageView(View):
@@ -479,13 +485,21 @@ class SetProfileImageView(View):
         profile = UserProfile.objects.get(user=request.user)
         profile.picture = image.image
         profile.save()
-        return redirect('profile_images')  # عدل الرابط بناءً على URL إعادة التوجيه
+        return redirect('profile_image')  # عدل الرابط بناءً على URL إعادة التوجيه
+
 
 class DeleteImageView(View):
     def get(self, request, image_id):
         image = get_object_or_404(UserProfileImage, id=image_id, user=request.user)
         image.delete()
-        return redirect('profile_images')  # عدل الرابط بناءً على URL إعادة التوجيه
+        return redirect('profile_image')  # عدل الرابط بناءً على URL إعادة التوجيه
+
+
+
+
+
+
+
 
 class AddFollower(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
