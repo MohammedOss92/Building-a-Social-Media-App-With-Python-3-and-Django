@@ -34,6 +34,7 @@ urlpatterns = [
     path('set_profile_image/<int:image_id>/', SetProfileImageView.as_view(), name='set_profile_image'),
     path('delete_image/<int:image_id>/', DeleteImageView.as_view(), name='delete_image'),
     path('profile_image/', user_profile_images_view, name='profile_image'),
+    path('select_image/', select_image, name='select_image'),
 
 
 

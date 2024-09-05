@@ -1,0 +1,20 @@
+{% extends 'landing/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Select Profile Image</h2>
+    <div class="row">
+        {% for image in images %}
+        <div class="col-md-4">
+            <div class="card my-2">
+                <img src="{{ image.image.url }}" class="card-img-top" alt="Profile Image"
+                    style="width: 100%; height: 100px; object-fit: contain;">
+                <div class="card-body">
+                    <a href="{% url 'set_profile_image' image.id %}" class="btn btn-primary">Set as Profile</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}

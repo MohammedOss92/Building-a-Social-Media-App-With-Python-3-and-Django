@@ -77,7 +77,7 @@ function formatTags2() {
         elements[i].children[0].innerHTML = words.join(' ');
     }
 }
-function formatTags() {
+function formatTags2222() {
     const elements = document.getElementsByClassName('body');
     for (let i = 0; i < elements.length; i++) {
         let bodyText = elements[i].innerHTML;  // استخدم innerHTML بدلاً من innerText
@@ -91,6 +91,24 @@ function formatTags() {
         elements[i].innerHTML = replacedText;  // تحديث النص داخل العنصر
     }
 }
+
+function formatTags() {
+    const elements = document.getElementsByClassName('body');
+    for (let i = 0; i < elements.length; i++) {
+        let bodyText = elements[i].innerHTML;
+
+        // استخدام تعبير منتظم لاستبدال الوسوم التي تبدأ بـ #
+        const replacedText = bodyText.replace(/#(\w+)/g, (match, tag) => {
+            return `<a href="/tags/${encodeURIComponent(tag)}/">${match}</a>`;
+        });
+
+        elements[i].innerHTML = replacedText;
+    }
+}
+
+// استدعاء الدالة بعد تحميل الصفحة
+window.onload = formatTags;
+
 
 // استدعاء الدالة بعد تحميل الصفحة
 window.onload = formatTags;

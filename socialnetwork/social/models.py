@@ -195,7 +195,51 @@ class Comment(models.Model):
 #     birth_date=models.DateField(null=True, blank=True)
 #     location = models.CharField(max_length=100, blank=True, null=True)
 #     picture = models.ImageField(upload_to='uploads/profile_pictures', default='uploads/profile_pictures/default.png', blank=True)
+# #     followers = models.ManyToManyField(User, blank=True, related_name='followers')
+# class UserProfile(models.Model):
+#     user = models.OneToOneField(User, primary_key=True, verbose_name='user', related_name='profile', on_delete=models.CASCADE)
+#     name = models.CharField(max_length=30, blank=True, null=True)
+#     bio = models.TextField(max_length=500, blank=True, null=True)
+#     birth_date = models.DateField(null=True, blank=True)
+#     location = models.CharField(max_length=100, blank=True, null=True)
+#     picture = models.ImageField(upload_to='uploads/profile_pictures', default='uploads/profile_pictures/default.png', blank=True)
 #     followers = models.ManyToManyField(User, blank=True, related_name='followers')
+
+# @receiver(pre_save, sender=UserProfile)
+# def save_previous_profile_picture(sender, instance, **kwargs):
+#     if instance.pk:
+#         old_picture = UserProfile.objects.get(pk=instance.pk).picture
+#         if old_picture != instance.picture:
+#             UserProfileImage.objects.create(user=instance.user, image=old_picture)
+
+
+# @receiver(post_save, sender=User)
+# def create_user_profile(sender, instance, created, **kwargs):
+#     if created:
+#         UserProfile.objects.create(user=instance)
+        
+# # الدالة create_user_profile: تُنفذ بعد حفظ كائن User في قاعدة البيانات.
+# # sender: النموذج الذي أرسل الإشارة، وهو هنا User.
+# # instance: الكائن الذي تم حفظه، وهو هنا كائن User الجديد.
+# # created: قيمة Boolean تشير إلى ما إذا كان الكائن قد تم إنشاؤه حديثًا (True) أو تم تحديثه (False).
+# # **kwargs: يُستخدم لتمرير معلمات إضافية.
+
+# @receiver(post_save, sender=User)
+# def save_user_profile(sender, instance, **kwargs):
+#     instance.profile.save()
+    
+# # create_user_profile: ينشئ ملفًا شخصيًا جديدًا عندما يتم إنشاء مستخدم جديد.
+# # save_user_profile: يحفظ ملف المستخدم الشخصي المرتبط إذا كان موجودًا، مما يضمن مزامنة أي تغييرات بين User و UserProfile.
+    
+
+# class UserProfileImage(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='profile_images')
+#     image = models.ImageField(upload_to='uploads/profile_pictures')
+#     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return f"{self.user.username} - {self.uploaded_at}"
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, primary_key=True, verbose_name='user', related_name='profile', on_delete=models.CASCADE)
     name = models.CharField(max_length=30, blank=True, null=True)
@@ -203,7 +247,9 @@ class UserProfile(models.Model):
     birth_date = models.DateField(null=True, blank=True)
     location = models.CharField(max_length=100, blank=True, null=True)
     picture = models.ImageField(upload_to='uploads/profile_pictures', default='uploads/profile_pictures/default.png', blank=True)
-    followers = models.ManyToManyField(User, blank=True, related_name='followers')
+    
+    # تعديل related_name لحقل followers
+    followers = models.ManyToManyField(User, blank=True, related_name='profile_followers')
 
 @receiver(pre_save, sender=UserProfile)
 def save_previous_profile_picture(sender, instance, **kwargs):
@@ -212,25 +258,14 @@ def save_previous_profile_picture(sender, instance, **kwargs):
         if old_picture != instance.picture:
             UserProfileImage.objects.create(user=instance.user, image=old_picture)
 
-
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
-        
-# الدالة create_user_profile: تُنفذ بعد حفظ كائن User في قاعدة البيانات.
-# sender: النموذج الذي أرسل الإشارة، وهو هنا User.
-# instance: الكائن الذي تم حفظه، وهو هنا كائن User الجديد.
-# created: قيمة Boolean تشير إلى ما إذا كان الكائن قد تم إنشاؤه حديثًا (True) أو تم تحديثه (False).
-# **kwargs: يُستخدم لتمرير معلمات إضافية.
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
-    
-# create_user_profile: ينشئ ملفًا شخصيًا جديدًا عندما يتم إنشاء مستخدم جديد.
-# save_user_profile: يحفظ ملف المستخدم الشخصي المرتبط إذا كان موجودًا، مما يضمن مزامنة أي تغييرات بين User و UserProfile.
-    
 
 class UserProfileImage(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='profile_images')

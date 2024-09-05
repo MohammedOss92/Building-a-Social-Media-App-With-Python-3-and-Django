@@ -26,9 +26,15 @@
                             <a href="#" class="btn btn-outline-dark btn-sm m-1" data-bs-toggle="modal"
                                 data-bs-target="#viewPhotoModal-{{ forloop.counter }}">View</a>
 
+                            {% if image.id and image.id != current_profile_image.id %}
+
+                            <a href="{% url 'delete_image' image.id %}" class="btn btn-danger btn-sm m-1">Delete</a>
+                            {% endif %}
+
                             <!-- إخفاء الأزرار بجانب الصورة الحالية -->
+                            {%comment%}
                             {% if image.id != current_profile_image.id %}
-                            <div class="dropdown d-inline">
+                            <div class=" dropdown d-inline">
                                 <button class="btn btn-secondary dropdown-toggle btn-sm m-1" type="button"
                                     id="dropdownMenuButton-{{ forloop.counter }}" data-bs-toggle="dropdown"
                                     aria-expanded="false">
@@ -42,9 +48,11 @@
                                 </ul>
                             </div>
                             {% endif %}
+                            {%endcomment%}
                         </div>
                     </div>
                 </div>
+
 
                 <!-- Modal -->
                 <div class="modal fade" id="viewPhotoModal-{{ forloop.counter }}" tabindex="-1"

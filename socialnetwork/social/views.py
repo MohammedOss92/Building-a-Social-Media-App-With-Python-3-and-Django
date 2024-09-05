@@ -464,17 +464,22 @@ def user_profile_images_view(request):
     images = list(UserProfileImage.objects.filter(user=request.user))
 
     # الحصول على الصورة الحالية من ملف التعريف
-    current_profile = UserProfile.objects.get(user=request.user)
-    if current_profile.picture:
-        # إذا كانت الصورة الحالية موجودة بالفعل في القائمة، قم بإزالتها لتجنب التكرار
-        images = [image for image in images if image.image != current_profile.picture]
-        # ثم أضف الصورة الحالية إلى أول القائمة
-        images.insert(0, current_profile.picture)
+    try:
+        current_profile = UserProfile.objects.get(user=request.user)
+        if current_profile.picture:
+            # إذا كانت الصورة الحالية موجودة بالفعل في القائمة، قم بإزالتها لتجنب التكرار
+            images = [image for image in images if image.image != current_profile.picture]
+            # ثم أضف الصورة الحالية إلى أول القائمة
+            images.insert(0, current_profile.picture)
+    except UserProfile.DoesNotExist:
+        # التعامل مع حالة عدم وجود ملف تعريف
+        current_profile = None
 
     context = {
         'images': images
     }
     return render(request, 'social/profile_image.html', context)
+
 
 
 
@@ -497,7 +502,10 @@ class DeleteImageView(View):
 
 
 
-
+@login_required
+def select_image(request):
+    images = UserProfileImage.objects.filter(user=request.user)
+    return render(request, 'social/select_image.html', {'images': images})
 
 
 
