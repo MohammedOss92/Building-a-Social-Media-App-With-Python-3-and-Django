@@ -2,6 +2,9 @@
 {% load crispy_forms_tags %}
 {% block content %}
 
+
+
+
 <div class="container">
     <div class="row mt-5">
         <div class="col-md-5 col-sm-6">
@@ -9,12 +12,21 @@
         </div>
     </div>
     <div class="row justify-content-center mt-3">
+
         <div class="col-md-5 col-sm-12">
             {% if tag %}
             <h3>Explore #{{ tag.name }} Posts</h3>
             <p class="mb-3">Most recent posts tagged with {{ tag.name }}</p>
             {% else %}
             <h3>Explore Posts</h3>
+            <!-- عرض الرسائل في أعلى الصفحة -->
+            {% if messages %}
+            <div class="alert alert-danger">
+                {% for message in messages %}
+                {{ message }}
+                {% endfor %}
+            </div>
+            {% endif %}
             <p class="mb-3">Explore tags to find new posts</p>
             {% endif %}
             <form method="POST" class="mb-5">
@@ -23,6 +35,7 @@
             </form>
 
         </div>
+
     </div>
 
     {% for post in posts %}

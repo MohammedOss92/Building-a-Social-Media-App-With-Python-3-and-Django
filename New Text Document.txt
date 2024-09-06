@@ -1,0 +1,88 @@
+def saved(request):
+    if request.user.is_authenticated:
+        all_posts = Post.objects.filter(savers=request.user).order_by('-date_created')
+
+        paginator = Paginator(all_posts, 10)
+        page_number = request.GET.get('page')
+        if page_number == None:
+            page_number = 1
+        posts = paginator.get_page(page_number)
+
+        followings = Follower.objects.filter(followers=request.user).values_list('user', flat=True)
+        suggestions = User.objects.exclude(pk__in=followings).exclude(username=request.user.username).order_by("?")[:6]
+        return render(request, "network/index.html", {
+            "posts": posts,
+            "suggestions": suggestions,
+            "page": "saved"
+        })
+    else:
+        return HttpResponseRedirect(reverse('login'))
+        
+
+@csrf_exempt
+def save_post(request, id):
+    if request.user.is_authenticated:
+        if request.method == 'PUT':
+            post = Post.objects.get(pk=id)
+            print(post)
+            try:
+                post.savers.add(request.user)
+                post.save()
+                return HttpResponse(status=204)
+            except Exception as e:
+                return HttpResponse(e)
+        else:
+            return HttpResponse("Method must be 'PUT'")
+    else:
+        return HttpResponseRedirect(reverse('login'))
+
+@csrf_exempt
+def unsave_post(request, id):
+    if request.user.is_authenticated:
+        if request.method == 'PUT':
+            post = Post.objects.get(pk=id)
+            print(post)
+            try:
+                post.savers.remove(request.user)
+                post.save()
+                return HttpResponse(status=204)
+            except Exception as e:
+                return HttpResponse(e)
+        else:
+            return HttpResponse("Method must be 'PUT'")
+    else:
+        return HttpResponseRedirect(reverse('lo
+gin'))
+
+ {% if user in post.savers.all %}
+                                                <div class="save" onclick="unsave_post(this)" data-post_id="{{post.id}}">
+                                                    <div class="svg-span">
+                                                        <svg width="1.1em" height="1.1em" viewBox="0.5 0 15 15" class="bi bi-bookmark-fill" fill="#17bf63" xmlns="http://www.w3.org/2000/svg">
+                                                            <path fill-rule="evenodd" d="M3 3a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v12l-5-3-5 3V3z"/>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <div class="save" onclick="save_post(this)" data-post_id="{{post.id}}">
+                                                    <div class="svg-span">
+                                                        <svg width="1.1em" height="1.1em" viewBox="0.5 0 15 15" class="bi bi-bookmark" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                            <path fill-rule="evenodd" d="M8 12l5 3V3a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12l5-3zm-4 1.234l4-2.4 4 2.4V3a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10.234z"/>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+
+
+
+
+
+<li class="nav-item" id="saved">
+                                        <a href="{% url 'saved' %}" class="nav-link">
+                                            <div>
+                                                <svg width="1.5em" height="1.5em" viewBox="0 0 16 16" class="bi bi-bookmark" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                    <path fill-rule="evenodd" d="M8 12l5 3V3a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12l5-3zm-4 1.234l4-2.4 4 2.4V3a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10.234z"/>
+                                                  </svg>
+                                                &nbsp;&nbsp;Saved
+                                            </div>
+                                        </a>
+                                    </li>

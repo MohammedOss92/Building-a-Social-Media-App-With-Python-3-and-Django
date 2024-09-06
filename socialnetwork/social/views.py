@@ -457,6 +457,7 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         profile = self.get_object()
         return self.request.user == profile.user
+
     
 @login_required
 def user_profile_images_view(request):
@@ -985,32 +986,61 @@ class Explore(View):
 
         return render(request, 'social/explore.html', context)
     
+    
     def post(self, request, *args, **kwargs):
         explore_form = ExploreForm(request.POST)
         if explore_form.is_valid():
             query = explore_form.cleaned_data['query']
             tag = Tag.objects.filter(name=query).first()
 
-            posts = None
             if tag:
                 posts = Post.objects.filter(tags__in=[tag])
-
-            if posts:
-                context = {
-                    'tag': tag,
-                    'posts': posts,
-                }
+                
+                # إذا لم يكن هناك أي منشورات مرتبطة بالوسم
+                if not posts.exists():
+                    messages.error(request, 'No posts found for this tag.')
+                    return redirect('explore')  # إعادة التوجيه إلى صفحة البحث
             else:
-                context = {
-                    'tag': tag,
-                }
+                # إذا لم يتم العثور على الوسم
+                messages.error(request, 'Tag not found.')
+                return redirect('explore')  # إعادة التوجيه إلى صفحة البحث
+            
+            # إذا تم العثور على الوسم والمنشورات، نقوم بإعادة التوجيه مع الاستعلام
             return redirect(f'/social/explore?query={query}')
+        
+        # إذا كان النموذج غير صالح
+        messages.error(request, 'Invalid search query.')
         return redirect('/social/explore')
     
 
 
+# في دالة post:
+# المقصود: عند إرسال نموذج من قبل المستخدم (مثل نموذج البحث)، فإن دالة post تتعامل مع البيانات التي أرسلها المستخدم.
+# أين تظهر رسالة الخطأ: إذا كان هناك خطأ في البيانات المرسلة، مثل إدخال غير صحيح أو عدم وجود وسم في قاعدة البيانات، فإن رسالة الخطأ تظهر مباشرة بعد محاولة المستخدم إرسال البيانات. هذا يعني أن الرسالة تكون أمام المستخدم مباشرة بعد إجراء العملية، وتساعده على فهم السبب وتوجيهه لإصلاح الخطأ.
+# في دالة get:
+# المقصود: دالة get تُستخدم لعرض البيانات على الصفحة عند تحميلها، سواء كان ذلك لأول مرة أو بعد إعادة التوجيه من دالة post.
 
+# def post(self, request, *args, **kwargs):
+#         explore_form = ExploreForm(request.POST)
+#         if explore_form.is_valid():
+#             query = explore_form.cleaned_data['query']
+#             tag = Tag.objects.filter(name=query).first()
 
+#             posts = None
+#             if tag:
+#                 posts = Post.objects.filter(tags__in=[tag])
+
+#             if posts:
+#                 context = {
+#                     'tag': tag,
+#                     'posts': posts,
+#                 }
+#             else:
+#                 context = {
+#                     'tag': tag,
+#                 }
+#             return redirect(f'/social/explore?query={query}')
+#         return redirect('/social/explore')
 #يعني الكلاس الذي يحتوي post get يكون cbsv
 
 # واستخدم معه LoginRequiredMixin
