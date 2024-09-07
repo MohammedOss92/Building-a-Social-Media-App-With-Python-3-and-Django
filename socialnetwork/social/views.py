@@ -969,30 +969,33 @@ class CreateMessage(LoginRequiredMixin,View):
 class Explore(View):
     def get(self, request, *args, **kwargs):
         explore_form = ExploreForm()
-        query = self.request.GET.get('query')  # تصحيح Get إلى GET
-        tag = Tag.objects.filter(name=query).first()
+        query = self.request.GET.get('query')
 
-        if tag:
-            posts = Post.objects.filter(tags__in=[tag])
+        if query:  # تحقق من أن query ليست None أو فارغة
+            tag = Tag.objects.filter(name__icontains=query).first()
+            if tag:
+                posts = Post.objects.filter(tags__in=[tag])
+            else:
+                posts = Post.objects.all()
         else:
             posts = Post.objects.all()
 
         context = {
-            'tag': tag,
+            'tag': tag if query else None,  # تعيين tag فقط إذا كانت قيمة query موجودة
             'posts': posts,
             'explore_form': explore_form,
-            'no_results': not posts.exists() and not tag,  # إضافة متغير لتحديد عدم وجود نتائج
-
+            'no_results': not posts.exists() and not query,  # إضافة متغير لتحديد عدم وجود نتائج
         }
 
         return render(request, 'social/explore.html', context)
-    
+
     
     def post(self, request, *args, **kwargs):
-        explore_form = ExploreForm(request.POST)
-        if explore_form.is_valid():
-            query = explore_form.cleaned_data['query']
-            tag = Tag.objects.filter(name=query).first()
+     explore_form = ExploreForm(request.POST)
+     if explore_form.is_valid():
+        query = explore_form.cleaned_data['query']
+        if query:  # تحقق من أن query ليست فارغة
+            tag = Tag.objects.filter(name__icontains=query).first()
 
             if tag:
                 posts = Post.objects.filter(tags__in=[tag])
@@ -1005,13 +1008,41 @@ class Explore(View):
                 # إذا لم يتم العثور على الوسم
                 messages.error(request, 'Tag not found.')
                 return redirect('explore')  # إعادة التوجيه إلى صفحة البحث
-            
+             
             # إذا تم العثور على الوسم والمنشورات، نقوم بإعادة التوجيه مع الاستعلام
             return redirect(f'/social/explore?query={query}')
+        else:
+            messages.error(request, 'Invalid search query.')
+            return redirect('/social/explore')
+    
+    # إذا كان النموذج غير صالح
+     messages.error(request, 'Invalid search query.')
+     return redirect('/social/explore')
+
+    # def post(self, request, *args, **kwargs):
+    #     explore_form = ExploreForm(request.POST)
+    #     if explore_form.is_valid():
+    #         query = explore_form.cleaned_data['query']
+    #         tag = Tag.objects.filter(name=query).first()
+
+    #         if tag:
+    #             posts = Post.objects.filter(tags__in=[tag])
+                
+    #             # إذا لم يكن هناك أي منشورات مرتبطة بالوسم
+    #             if not posts.exists():
+    #                 messages.error(request, 'No posts found for this tag.')
+    #                 return redirect('explore')  # إعادة التوجيه إلى صفحة البحث
+    #         else:
+    #             # إذا لم يتم العثور على الوسم
+    #             messages.error(request, 'Tag not found.')
+    #             return redirect('explore')  # إعادة التوجيه إلى صفحة البحث
+            
+    #         # إذا تم العثور على الوسم والمنشورات، نقوم بإعادة التوجيه مع الاستعلام
+    #         return redirect(f'/social/explore?query={query}')
         
-        # إذا كان النموذج غير صالح
-        messages.error(request, 'Invalid search query.')
-        return redirect('/social/explore')
+    #     # إذا كان النموذج غير صالح
+    #     messages.error(request, 'Invalid search query.')
+    #     return redirect('/social/explore')
     
 
 

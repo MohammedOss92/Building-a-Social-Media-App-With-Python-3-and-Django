@@ -107,7 +107,6 @@ function formatTags() {
 }
 
 // استدعاء الدالة بعد تحميل الصفحة
-window.onload = formatTags;
 
 
 // استدعاء الدالة بعد تحميل الصفحة
