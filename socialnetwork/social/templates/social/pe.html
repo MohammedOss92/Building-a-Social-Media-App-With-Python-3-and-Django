@@ -1,0 +1,231 @@
+{% extends 'landing/base.html' %}
+{% load static %}
+
+{% block head %}
+<style>
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropbtn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 16px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+    }
+
+    .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+
+    .dropdown-content a:hover {
+        background-color: #f1f1f1;
+    }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    .dropdown:hover .dropbtn {
+        background-color: #3e8e41;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Back to Profile Button -->
+    <div class="row mt-5">
+        <div class="col-md-5 col-sm-6">
+            <a href="{% url 'profile' object.pk %}" class="btn btn-light">Back To Profile</a>
+        </div>
+    </div>
+
+    <!-- Profile Update Header -->
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <h5>Update Your Profile</h5>
+        </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="container">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Name Field -->
+            <div class="form-group mb-3">
+                <label for="id_name">الاسم:</label>
+                {{ form.name }}
+            </div>
+
+            <!-- Bio Field -->
+            <div class="form-group mb-3">
+                <label for="id_bio">السيرة الذاتية:</label>
+                {{ form.bio }}
+            </div>
+
+            <!-- Birth Date Field -->
+            <div class="form-group mb-3">
+                <label for="id_birth_date">تاريخ الميلاد:</label>
+                {{ form.birth_date }}
+            </div>
+
+            <!-- Location Field -->
+            <div class="form-group mb-3">
+                <label for="id_location">الموقع:</label>
+                {{ form.location }}
+            </div>
+
+            <!-- Profile Image Dropdown -->
+            <div class="form-group mb-3">
+                <div class="dropdown">
+                    <button class="dropbtn">اختيار صورة</button>
+                    <div class="dropdown-content">
+                        <a href="{% url 'select_image' %}" class="btn btn-secondary">اختر صورة موجودة</a>
+                        <label>
+                            <input type="file" id="id_picture" name="picture" style="display: none;">
+                            <a href="#" onclick="document.getElementById('id_picture').click()"
+                                class="btn btn-secondary">
+                                رفع صورة جديدة
+                            </a>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+{%comment%}
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعديل الملف الشخصي</title>
+    <style>
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropbtn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 16px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: #3e8e41;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>تعديل الملف الشخصي</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_name">الاسم:</label>
+                {{ form.name }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_bio">السيرة الذاتية:</label>
+                {{ form.bio }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_birth_date">تاريخ الميلاد:</label>
+                {{ form.birth_date }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_location">الموقع:</label>
+                {{ form.location }}
+            </div>
+
+            <div class="form-group">
+                <!-- <label for="id_picture">الصورة الشخصية:</label> -->
+
+                <div class="dropdown">
+                    <button class="dropbtn">اختيار صورة</button>
+                    <div class="dropdown-content">
+                        <a href="{% url 'select_image' %}" class="btn btn-secondary">اختر صورة موجودة</a>
+                        <label>
+                            <input type="file" id="id_picture" name="picture" style="display: none;">
+                            <a href="#" onclick="document.getElementById('id_picture').click()"
+                                class="btn btn-secondary">رفع صورة جديدة</a>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit">حفظ التعديلات</button>
+        </form>
+    </div>
+</body>
+
+</html>
+{%endcomment%}

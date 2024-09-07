@@ -449,6 +449,7 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = UserProfile
     form_class = UserProfileForm  # استخدم النموذج المعدل هنا
     template_name = 'social/profile_edit.html'
+    #template_name = 'social/pe.html'
 
     def get_success_url(self):
         pk = self.kwargs['pk']
