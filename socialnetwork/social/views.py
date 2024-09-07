@@ -445,11 +445,11 @@ class ProfileView(LoginRequiredMixin,View):
 #     def test_func(self):
 #         profile = self.get_object()
 #         return self.request.user == profile.user
-class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class ProfileEditView2(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = UserProfile
     form_class = UserProfileForm  # استخدم النموذج المعدل هنا
-    template_name = 'social/profile_edit.html'
-    #template_name = 'social/pe.html'
+    # template_name = 'social/profile_edit.html'
+    template_name = 'social/pee.html'
 
     def get_success_url(self):
         pk = self.kwargs['pk']
@@ -458,6 +458,32 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         profile = self.get_object()
         return self.request.user == profile.user
+    
+class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = UserProfile
+    form_class = UserProfileForm
+    template_name = 'social/pee.html'
+
+    # التحقق من صحة النموذج وحفظه
+    def form_valid(self, form):
+        print(self.request.POST)  # طباعة البيانات للتحقق
+        return super().form_valid(form)
+
+    # إذا كان النموذج غير صحيح، طباعة الأخطاء
+    def form_invalid(self, form):
+        print(form.errors)  # طباعة الأخطاء للتحقق
+        return super().form_invalid(form)
+
+    # إعادة التوجيه إلى صفحة الملف الشخصي بعد التحديث
+    def get_success_url(self):
+        return reverse_lazy('profile', kwargs={'pk': self.object.pk})
+
+    # التحقق من أن المستخدم هو صاحب الحساب
+    def test_func(self):
+        profile = self.get_object()
+        return self.request.user == profile.user
+
+
 
     
 @login_required

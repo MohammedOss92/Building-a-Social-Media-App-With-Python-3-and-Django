@@ -78,7 +78,7 @@ class ExploreForm(forms.Form):
         })
     )
 
-class UserProfileForm(forms.ModelForm):
+class UserProfileForm2(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ['name', 'bio', 'birth_date', 'location', 'picture']
@@ -86,4 +86,11 @@ class UserProfileForm(forms.ModelForm):
             'birth_date': forms.DateInput(attrs={'type': 'date'}),
         }
 
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['name', 'bio', 'birth_date', 'location', 'picture']
+        widgets = {
+            'birth_date': forms.DateInput(attrs={'type': 'date'}),
+        }
 

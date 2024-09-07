@@ -181,3 +181,20 @@
 .dropdown:hover .dropbtn {
     background-color: #3e8e41;
 }
+
+/* إضافة بعض التعديلات لنموذج الملف الشخصي */
+.form-label {
+    font-weight: bold;
+}
+
+.form-control {
+    margin-bottom: 1rem;
+}
+
+textarea.form-control {
+    height: 100px;
+}
+
+.btn {
+    margin-top: 1rem;
+}
