@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 import json
 from django.views.generic import ListView
+from django.http import JsonResponse
 
 
 # Create your views here.
@@ -459,7 +460,7 @@ class ProfileEditView2(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         profile = self.get_object()
         return self.request.user == profile.user
     
-class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class ProfileEditView2(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = UserProfile
     form_class = UserProfileForm
     template_name = 'social/pee.html'
@@ -482,6 +483,35 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         profile = self.get_object()
         return self.request.user == profile.user
+    
+class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = UserProfile
+    form_class = UserProfileForm
+    template_name = 'social/pee.html'
+
+    def form_valid(self, form):
+        # تحديث username للمستخدم
+        user = form.instance.user
+        user.username = form.cleaned_data['username']
+        user.save()  # حفظ التعديلات في User
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        print(form.errors)  # طباعة الأخطاء للتحقق
+        return super().form_invalid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('profile', kwargs={'pk': self.object.pk})
+
+    def test_func(self):
+        profile = self.get_object()
+        return self.request.user == profile.user
+
+
+def check_username_availability(request):
+    username = request.GET.get('username', None)
+    is_available = not User.objects.filter(username=username).exists()
+    return JsonResponse({'is_available': is_available})
 
 
 

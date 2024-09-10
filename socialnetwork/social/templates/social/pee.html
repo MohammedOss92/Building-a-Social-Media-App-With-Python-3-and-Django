@@ -24,6 +24,23 @@
                     <label for="id_name" class="form-label">Name</label>
                     <input type="text" class="form-control" id="id_name" name="name" value="{{ form.name.value }}">
                 </div>
+                {%comment%}
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="0id_username" name="username"
+                        value="{{ form.instance.user.username }}">
+                </div>
+                {%endcomment%}
+
+                <div class="mb-3 position-relative">
+                    <label for="id_username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="id_username" name="username"
+                        value="{{ form.instance.user.username }}">
+                    <div id="username-feedback" class="position-absolute"
+                        style="top: 50%; right: 10px; transform: translateY(-50%);">
+                        <!-- سيتم إضافة أيقونة التحقق هنا -->
+                    </div>
+                </div>
 
                 <div class="mb-3">
                     <label for="id_bio" class="form-label">Bio</label>
@@ -60,4 +77,32 @@
         </div>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#id_username').on('input', function () {
+            var username = $(this).val();
+            if (username.length > 0) {
+                $.ajax({
+                    url: "{% url 'check_username_availability' %}",
+                    data: {
+                        'username': username
+                    },
+                    success: function (data) {
+                        var feedback = $('#username-feedback');
+                        if (data.is_available) {
+                            feedback.html('<span style="color: green;">&#10003;</span>');  // رمز صح
+                        } else {
+                            feedback.html('<span style="color: red;">&#10007;</span>');  // رمز إكس
+                        }
+                    }
+                });
+            } else {
+                $('#username-feedback').html('');  // إزالة الأيقونة عند عدم وجود نص
+            }
+        });
+    });
+</script>
+
 {% endblock content %}
