@@ -1,0 +1,129 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-5 col-sm-6">
+            <a href="{% url 'profile' object.pk %}" class="btn btn-light">Back To Profile</a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <h5>Update Your Profile</h5>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-3 mb-5">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form | crispy }}
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success mt-3">Submit!</button>
+                </div>
+            </form>
+
+            <div class="mt-3">
+                <a href="{% url 'select_image' %}" class="btn btn-secondary">Select Existing Image</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+
+{% comment %}
+
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-5 col-sm-6">
+            <a href="{% url 'profile' object.pk %}" class="btn btn-light">Back To Profile</a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <h5>Update Your Profile</h5>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-3 mb-5">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form | crispy }}
+
+                <!-- خيارات اختيار الصورة -->
+                <div class="mt-3 mb-3">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'select_image' %}" class="btn btn-secondary">Select Existing Image</a>
+                        <button type="button" class="btn btn-primary"
+                            onclick="document.getElementById('fileUpload').click();">Choose File</button>
+                        <input type="file" id="fileUpload" name="fileUpload" style="display: none;" />
+                    </div>
+                </div>
+
+                <!-- زر إرسال النموذج -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-success mt-3">Submit!</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+
+
+
+
+
+
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-5 col-sm-6">
+            <a href="{% url 'profile' object.pk %}" class="btn btn-light">Back To Profile</a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <h5>Update Your Profile</h5>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-3 mb-5">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form | crispy }}
+                <div class="mt-3">
+                    <a href="{% url 'select_image' %}" class="btn btn-secondary">Select Existing Image</a>
+                </div>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success mt-3">Submit!</button>
+                </div>
+
+            </form>
+
+
+
+        </div>
+    </div>
+</div>
+{% endblock content %}
+{%endcomment%}
