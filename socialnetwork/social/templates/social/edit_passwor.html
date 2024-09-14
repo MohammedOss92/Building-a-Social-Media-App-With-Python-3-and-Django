@@ -17,42 +17,7 @@
 
 
 
-        <div class="col-md-9 col-sm-8">
-            <div class="row justify-content-center">
-                <div class="col-md-8 col-sm-12 border-bottom">
-                    <h5>Update Your Password</h5>
-                </div>
-            </div>
 
-            <div class="row justify-content-center mt-3 mb-5">
-                <div class="col-md-5 col-sm-12 border-bottom">
-                    <form method="POST">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="old_password" class="form-label">Old Password</label>
-                            <input type="password" class="form-control" id="old_password" name="old_password" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="new_password1" class="form-label">New Password</label>
-                            <input type="password" class="form-control" id="new_password1" name="new_password1"
-                                required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="new_password2" class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-control" id="new_password2" name="new_password2"
-                                required>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-success mt-3" type="submit">Update Password</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
-</div>
 </div>
 {% endblock content %}

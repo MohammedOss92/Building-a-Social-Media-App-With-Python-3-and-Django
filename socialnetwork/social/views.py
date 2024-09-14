@@ -486,24 +486,66 @@ class ProfileEditView2(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         profile = self.get_object()
         return self.request.user == profile.user
     
+# class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+#     model = UserProfile
+#     form_class = UserProfileForm
+#     template_name = 'social/profile_edit.html'
+
+#     # def form_valid(self, form):
+#     #     # تحديث username للمستخدم
+#     #     user = form.instance.user
+#     #     user.username = form.cleaned_data['username']
+#     #     user.email = form.cleaned_data['email']  # تحديث البريد الإلكتروني
+#     #     user.save()  # حفظ التعديلات في User
+#     #     return super().form_valid(form)
+
+#     def form_valid(self, form):
+#      user = form.instance.user
+#      print("Username:", form.cleaned_data['username'])
+#      print("Email:", form.cleaned_data['email'])
+#      user.username = form.cleaned_data['username']
+#      user.email = form.cleaned_data['email']
+#      print("Username:", form.cleaned_data['username'])
+#      print("Email:", form.cleaned_data['email'])
+#      user.save()
+
+#      return super().form_valid(form)
 class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = UserProfile
     form_class = UserProfileForm
     template_name = 'social/profile_edit.html'
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.object.user  # تمرير المستخدم الحالي إلى النموذج
+        return kwargs
+
     def form_valid(self, form):
-        # تحديث username للمستخدم
         user = form.instance.user
         user.username = form.cleaned_data['username']
-        user.save()  # حفظ التعديلات في User
+        user.email = form.cleaned_data['email']
+        user.save()
         return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('profile', kwargs={'pk': self.object.pk})
+
+    def test_func(self):
+        profile = self.get_object()
+        return self.request.user == profile.user
+
+
 
     def form_invalid(self, form):
         print(form.errors)  # طباعة الأخطاء للتحقق
         return super().form_invalid(form)
 
+
+
     def get_success_url(self):
         return reverse_lazy('profile', kwargs={'pk': self.object.pk})
+
+
 
     def test_func(self):
         profile = self.get_object()
@@ -517,27 +559,7 @@ def check_username_availability(request):
 def get_success_url(self):
     return reverse_lazy('profile', kwargs={'pk': self.object.pk})
 
-def change_password(request):
-    if request.method == 'POST':
-        old_password = request.POST['old_password']
-        new_password1 = request.POST['new_password1']
-        new_password2 = request.POST['new_password2']
 
-        if not check_password(old_password, request.user.password):
-            messages.error(request, 'Old password is incorrect.')
-        elif new_password1 != new_password2:
-            messages.error(request, 'New passwords do not match.')
-        elif len(new_password1) < 8:
-            messages.error(request, 'New password must be at least 8 characters long.')
-        else:
-            # تحديث كلمة السر للمستخدم الحالي
-            request.user.set_password(new_password1)
-            request.user.save()
-            update_session_auth_hash(request, request.user)  # تحديث الجلسة لتجنب تسجيل الخروج
-            messages.success(request, 'Your password was successfully updated!')
-            return redirect('profile', pk=request.user.pk)
-    
-    return render(request, 'social/edit_passwor.html')
 
     
 @login_required

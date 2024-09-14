@@ -240,6 +240,83 @@ class Comment(models.Model):
 #     def __str__(self):
 #         return f"{self.user.username} - {self.uploaded_at}"
 
+# class UserProfile(models.Model):
+#     user = models.OneToOneField(User, primary_key=True, verbose_name='user', related_name='profile', on_delete=models.CASCADE)
+#     name = models.CharField(max_length=30, blank=True, null=True)
+#     bio = models.TextField(max_length=500, blank=True, null=True)
+#     birth_date = models.DateField(null=True, blank=True)
+#     location = models.CharField(max_length=100, blank=True, null=True)
+#     picture = models.ImageField(upload_to='uploads/profile_pictures', default='uploads/profile_pictures/default.png', blank=True)
+#     # تعديل related_name لحقل followers
+#     followers = models.ManyToManyField(User, blank=True, related_name='profile_followers')
+
+
+
+# @receiver(pre_save, sender=UserProfile)
+# def save_previous_profile_picture(sender, instance, **kwargs):
+#     # تحقق ما إذا كان الكائن الحالي موجودًا (في حالة التعديل)
+#     if instance.pk:
+#         try:
+#             # جلب صورة الملف الشخصي القديمة
+#             old_profile = UserProfile.objects.get(pk=instance.pk)
+#             old_picture = old_profile.picture
+
+#             # إذا كانت الصورة القديمة مختلفة عن الصورة الجديدة، قم بحفظ القديمة
+#             if old_picture and old_picture != instance.picture:
+#                 UserProfileImage.objects.create(user=instance.user, image=old_picture)
+#         except UserProfile.DoesNotExist:
+#             # في حالة عدم وجود ملف شخصي قديم (الإنشاء لأول مرة)
+#             pass
+
+#     # في حالة الإنشاء الجديد أو التعديل، يمكن استخدام get_or_create
+#     profile, created = UserProfile.objects.get_or_create(user=instance.user)
+    
+#     # إذا كان الكائن قد تم إنشاؤه مسبقًا ولديه صورة قديمة
+#     if not created and profile.picture:
+#         old_picture = profile.picture
+#         # احفظ الصورة القديمة إذا كانت مختلفة عن الجديدة
+#         if old_picture != instance.picture:
+#             UserProfileImage.objects.create(user=instance.user, image=old_picture)
+
+
+
+
+# @receiver(post_save, sender=User)
+# def create_user_profile(sender, instance, created, **kwargs):
+#     if created:
+#         # تحقق من وجود ملف تعريف المستخدم (UserProfile) بالفعل
+#         profile, created = UserProfile.objects.get_or_create(user=instance)
+        
+#         # إذا كان قد تم إنشاء الملف الشخصي الجديد، قم بتعيين الصورة الافتراضية
+#         if created and not profile.picture:
+#             profile.picture = 'profile_pics/default_profile_picture.jpg'
+#             profile.save()
+
+
+
+# @receiver(post_save, sender=User)
+# def save_user_profile(sender, instance, **kwargs):
+#     instance.profile.save()
+
+# class UserProfileImage(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='profile_images')
+#     image = models.ImageField(upload_to='uploads/profile_pictures')
+#     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return f"{self.user.username} - {self.uploaded_at}"
+
+
+
+
+
+
+
+from django.db import models
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, primary_key=True, verbose_name='user', related_name='profile', on_delete=models.CASCADE)
     name = models.CharField(max_length=30, blank=True, null=True)
@@ -247,25 +324,31 @@ class UserProfile(models.Model):
     birth_date = models.DateField(null=True, blank=True)
     location = models.CharField(max_length=100, blank=True, null=True)
     picture = models.ImageField(upload_to='uploads/profile_pictures', default='uploads/profile_pictures/default.png', blank=True)
-    
-    # تعديل related_name لحقل followers
     followers = models.ManyToManyField(User, blank=True, related_name='profile_followers')
 
 @receiver(pre_save, sender=UserProfile)
 def save_previous_profile_picture(sender, instance, **kwargs):
+    # تحقق من وجود الكائن قبل التعديل
     if instance.pk:
-        old_picture = UserProfile.objects.get(pk=instance.pk).picture
-        if old_picture != instance.picture:
-            UserProfileImage.objects.create(user=instance.user, image=old_picture)
+        try:
+            old_profile = UserProfile.objects.get(pk=instance.pk)
+            old_picture = old_profile.picture
+
+            # حفظ الصورة القديمة إذا كانت مختلفة
+            if old_picture and old_picture != instance.picture:
+                UserProfileImage.objects.create(user=instance.user, image=old_picture)
+        except UserProfile.DoesNotExist:
+            # إذا لم يكن هناك ملف شخصي قديم، فلا حاجة لعمل شيء هنا
+            pass
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        UserProfile.objects.create(user=instance)
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+        # إنشاء ملف تعريف جديد وتعيين الصورة الافتراضية إذا لم يكن هناك صورة
+        profile, created = UserProfile.objects.get_or_create(user=instance)
+        if created and not profile.picture:
+            profile.picture = 'uploads/profile_pictures/default_profile_picture.jpg'
+            profile.save(update_fields=['picture'])  # استخدم update_fields لتجنب الحلقة غير المنتهية
 
 class UserProfileImage(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='profile_images')

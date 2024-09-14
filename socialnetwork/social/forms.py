@@ -99,10 +99,17 @@ class UserProfileForm22(forms.ModelForm):
 
 class UserProfileForm(forms.ModelForm):
     username = forms.CharField(max_length=150, required=True)  # إضافة حقل username
+    email = forms.EmailField(required=True)  # إضافة حقل email
 
     class Meta:
         model = UserProfile
         fields = ['username', 'name', 'bio', 'birth_date', 'location', 'picture']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['email'].initial = user.email 
 
     def clean_username(self):
         # التحقق من أن `username` غير مكرر
@@ -110,5 +117,11 @@ class UserProfileForm(forms.ModelForm):
         if User.objects.filter(username=username).exclude(pk=self.instance.user.pk).exists():
             raise ValidationError("This username is already taken. Please choose another one.")
         return username
+    def clean_email(self):
+        # التحقق من أن `email` غير مكرر
+        email = self.cleaned_data['email']
+        if User.objects.filter(email=email).exclude(pk=self.instance.user.pk).exists():
+            raise ValidationError("This email is already in use. Please choose another one.")
+        return email
 
 
