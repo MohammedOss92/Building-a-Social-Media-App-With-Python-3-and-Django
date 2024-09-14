@@ -36,6 +36,7 @@ urlpatterns = [
     path('profile_image/', user_profile_images_view, name='profile_image'),
     path('select_image/', select_image, name='select_image'),
     path('check-username/', check_username_availability, name='check_username_availability'),
+    path('suggestions/', suggestions_view, name='suggestions'),
 
 
 ]

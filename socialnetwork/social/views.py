@@ -16,7 +16,7 @@ from django.core.paginator import Paginator
 import json
 from django.views.generic import ListView
 from django.http import JsonResponse
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import update_session_auth_hash,get_user_model
 from django.contrib.auth.hashers import check_password
 
 
@@ -1120,6 +1120,18 @@ class Explore(View):
     # إذا كان النموذج غير صالح
      messages.error(request, 'Invalid search query.')
      return redirect('/social/explore')
+    
+User = get_user_model()
+
+def get_suggestions(user, limit=6):
+    followings = user.profile.followers.all()  # المتابعون الحاليون للمستخدم
+    suggestions = User.objects.exclude(pk__in=followings).exclude(pk=user.pk).order_by("?")[:limit]  # استبعاد المستخدمين المتابعين الحاليين
+    return suggestions
+
+def suggestions_view(request):
+    suggestions = get_suggestions(request.user)  # استدعاء الدالة لجلب اقتراحات المستخدمين
+    return render(request, 'social/suggestions.html', {'suggestions': suggestions})  # إرسال الاقتراحات إلى القالب
+
 
     # def post(self, request, *args, **kwargs):
     #     explore_form = ExploreForm(request.POST)

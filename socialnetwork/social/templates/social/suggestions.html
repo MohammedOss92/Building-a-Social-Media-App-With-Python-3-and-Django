@@ -1,0 +1,31 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اقتراحات المتابعة</title>
+</head>
+
+<body>
+    <h1>اقتراحات المتابعة</h1>
+
+    <ul>
+        {% for suggestion in suggestions %}
+        <li>
+            {{ suggestion.username }}
+            <!-- عرض صورة الملف الشخصي -->
+            <img src="{{ suggestion.profile.picture.url }}" alt="Profile Picture" width="50">
+            <!-- رابط لملف المستخدم الشخصي -->
+            <a href="{% url 'profile' suggestion.pk %}">زيارة الملف الشخصي</a>
+        </li>
+        {% empty %}
+        <li>لا يوجد اقتراحات في الوقت الحالي</li>
+        {% endfor %}
+    </ul>
+
+    <!-- رابط للعودة إلى الصفحة الرئيسية -->
+</body>
+{% endblock content %}
