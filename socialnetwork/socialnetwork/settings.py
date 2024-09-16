@@ -166,3 +166,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "optional"  # يمكن أن يكون
+
+#إذا كنت ترغب في تخصيص نماذج التسجيل أو تسجيل الدخول، يمكنك إنشاء نماذج مخصصة وتسجيلها في settings.py:
+#ACCOUNT_FORMS = {
+#    'signup': 'myapp.forms.CustomSignupForm',
+#    'login': 'myapp.forms.CustomLoginForm',
+#}
+# from allauth.account.forms import SignupForm, LoginForm
+
+# class CustomSignupForm(SignupForm):
+#     # أضف الحقول أو التعديلات هنا
+
+# class CustomLoginForm(LoginForm):
+#     # أضف الحقول أو التعديلات هنا

@@ -817,3 +817,348 @@ class CreateMessage(View):
         
 #         # بعد حفظ الرسالة، نقوم بإعادة توجيه المستخدم إلى صفحة المحادثة الحالية.
 #         return redirect('thread', pk=pk)
+# class PostListView(LoginRequiredMixin, View):
+#     def get(self, request, *args, **kwargs):
+#         posts = Post.objects.all().order_by('-created_on')
+#         form = PostForm()
+
+#         context = {
+#             'post_list': posts,
+#             'form': form,
+#         }
+
+#         return render(request, 'social/post_list.html', context)
+
+
+#     def post(self, request, *args, **kwargs):
+#         posts = Post.objects.all().order_by('-created_on')
+#         form = PostForm(request.POST)
+
+#         if form.is_valid():
+#             new_post = form.save(commit=False)
+#             new_post.author = request.user
+#             new_post.save()
+
+#         context = {
+#             'post_list': posts,
+#             #'posts': posts,  # تغيير الاسم إلى 'posts'
+#             'form': form,
+#         }
+
+#         return render(request, 'social/post_list.html', context)
+
+# class PostListView(LoginRequiredMixin, View):
+#     # يُشترط أن يكون المستخدم مسجلاً للدخول للوصول إلى هذا العرض
+#     def get(self, request, *args, **kwargs):
+#         # الحصول على المستخدم الذي قام بتسجيل الدخول
+#         logged_in_user = request.user
+        
+#         # الحصول على جميع المنشورات التي كتبها المستخدمون الذين يتابعهم المستخدم الحالي
+#         # يتم استخدام `author__profile__followers__in=[logged_in_user.id]` للبحث عن المنشورات التي كتبها
+#         # مستخدمون يتبعهم المستخدم الحالي
+#         posts = Post.objects.filter(
+#             author__profile__followers__in=[logged_in_user.id]
+#         ).order_by('-created_on')  # ترتيب المنشورات من الأحدث إلى الأقدم
+        
+#         # إنشاء نموذج جديد للمنشورات
+#         form = PostForm()
+
+#         # إعداد السياق الذي سيتم تمريره إلى القالب
+#         context = {
+#             'post_list': posts,  # قائمة المنشورات التي سيتم عرضها
+#             'form': form,        # نموذج لإضافة منشورات جديدة
+#         }
+
+#         # عرض قالب `post_list.html` مع السياق الذي يحتوي على المنشورات والنموذج
+#         return render(request, 'social/post_list.html', context)
+
+#     def post(self, request, *args, **kwargs):
+#         logged_in_user = request.user
+#         # الحصول على جميع المنشورات وترتيبها من الأحدث إلى الأقدم
+#         posts = Post.objects.all().order_by('-created_on')
+        
+#         # إنشاء نموذج للمنشورات باستخدام البيانات المرسلة عبر POST
+#         form = PostForm(request.POST,request.FILES)
+
+#         # التحقق من صحة النموذج
+#         if form.is_valid():
+#             # حفظ المنشور الجديد بدون تقديمه مباشرة
+#             new_post = form.save(commit=False)
+#             # تعيين مؤلف المنشور إلى المستخدم الذي قام بتسجيل الدخول
+#             new_post.author = request.user
+#             # حفظ المنشور الجديد في قاعدة البيانات
+#             new_post.save()
+
+#         # إعداد السياق الذي سيتم تمريره إلى القالب
+#         context = {
+#             'post_list': posts,  # قائمة المنشورات التي سيتم عرضها
+#             'form': form,        # نموذج لإضافة منشورات جديدة
+#         }
+
+#         # عرض قالب `post_list.html` مع السياق الذي يحتوي على المنشورات والنموذج
+#         return render(request, 'social/post_list.html', context)
+    # class PostDetailView(View):
+#     def get(self, request,pk, *args, **kwargs):
+#         post=Post.objects.get(pk=pk)
+#         form = CommentForm()
+#         context ={
+#             'post':post
+#         }
+
+#         return render(request,'social/post_detail.html', context)
+   
+# # def post(self, request, pk, *args, **kwargs):
+
+# # هذه هي تعريف دالة post التي تتعامل مع طلبات POST إلى الخادم.
+# # self: إشارة إلى الكائن الذي يستدعي هذه الدالة، وهي عادةً طريقة داخل فئة (مثل DetailView أو CreateView).
+# # request: يمثل الطلب الوارد من المستخدم، والذي يحتوي على بيانات الطلب مثل البيانات المرسلة عبر النموذج.
+# # pk: هذا هو المفتاح الأساسي (Primary Key) للكائن الذي يتفاعل معه العرض (مثل منشور معين).
+# # *args و **kwargs: هذه المعاملات تستخدم لتمرير أي وسائط إضافية إلى الدالة، وهي مفيدة إذا كان هناك وسائط إضافية غير معروفة مقدماً.
+# # post = Post.objects.get(pk=pk)
+
+# # يقوم هذا السطر بجلب الكائن Post من قاعدة البيانات الذي يطابق المفتاح الأساسي الممرر (pk).
+# # Post.objects.get(pk=pk): هذه هي الطريقة القياسية في Django لجلب كائن محدد من قاعدة البيانات باستخدام مفتاحه الأساسي.
+# # form = CommentForm(request.POST)
+
+# # هنا يتم إنشاء نموذج CommentForm باستخدام البيانات التي أرسلها المستخدم عبر الطلب.
+# # request.POST: يحتوي على البيانات المرسلة عبر نموذج HTML عندما يقوم المستخدم بملء النموذج وتقديمه. يتم تمرير هذه البيانات إلى نموذج CommentForm للتحقق منها أو حفظها.
+# # context = { 'post': post }
+
+# # يتم إنشاء قاموس (Dictionary) يسمى context يحتوي على البيانات التي قد تحتاج إلى تمريرها إلى القالب (Template) لاحقًا. 
+#     def post(self, request,pk, *args, **kwargs):
+#         post=Post.objects.get(pk=pk)
+#         form = CommentForm(request.POST)
+
+#         if form.is_valid():
+#             new_comment = form.save(commit=False)
+#             new_comment.author = request.user
+#             new_comment.post = post
+#             new_comment.save()
+
+#         context ={
+#             'post':post
+#         }
+
+#         return render(request,'social/post_detail.html', context)
+    
+
+# class PostDetailView(View):
+
+#     def get(self, request, pk, *args, **kwargs):
+#         # جلب المنشور باستخدام المفتاح الأساسي (pk) 
+#         post = Post.objects.get(pk=pk)
+#         # إنشاء نموذج تعليق فارغ
+#         form = CommentForm()
+
+#         comments = Comment.objects.filter(post=post).order_by('-created_on')
+#         # إنشاء قاموس للسياق يحتوي على المنشور فقط في الوقت الحالي
+#         context = {
+#             'post': post,
+#             'form': form,
+#             'comments':comments
+#         }
+#         # عرض الصفحة باستخدام القالب مع تمرير السياق
+#         return render(request, 'social/post_detail.html', context)
+
+#     def post(self, request, pk, *args, **kwargs):
+#         # جلب المنشور باستخدام المفتاح الأساسي (pk) 
+#         post = Post.objects.get(pk=pk)
+#         # إنشاء نموذج تعليق باستخدام البيانات المرسلة من قبل المستخدم
+#         form = CommentForm(request.POST)
+
+#         # التحقق من صحة النموذج
+#         if form.is_valid():
+#             # إنشاء تعليق جديد ولكن بدون حفظه في قاعدة البيانات حتى الآن
+#             new_comment = form.save(commit=False)
+#             # تعيين المستخدم الحالي ككاتب للتعليق
+#             new_comment.author = request.user
+#             # ربط التعليق بالمنشور الحالي
+#             new_comment.post = post
+#             # حفظ التعليق في قاعدة البيانات
+#             new_comment.save()
+
+#         comments = Comment.objects.filter(post=post).order_by('-created_on')
+
+#         # إنشاء قاموس للسياق يحتوي على المنشور والنموذج
+#         context = {
+#             'post': post,
+#             'form': form,
+#             'comments':comments
+#         }
+
+#         # عرض الصفحة باستخدام القالب مع تمرير السياق
+#         return render(request, 'social/post_detail.html', context)
+
+    
+# class PostDetailView(LoginRequiredMixin,  View):
+#     def get(self, request, pk, *args, **kwargs):
+#         post = Post.objects.get(pk=pk)
+#         form = CommentForm()
+        
+#         comments = Comment.objects.filter(post=post).order_by('-created_on')
+
+#         context = {
+#             'post': post,
+#             'form': form,
+#             'comments': comments,
+#         }
+
+#         return render(request, 'social/post_detail.html', context)
+
+#     def post(self, request, pk, *args, **kwargs):
+#         post = Post.objects.get(pk=pk)
+#         form = CommentForm(request.POST)
+
+#         if form.is_valid():
+#             new_comment = form.save(commit=False)
+#             new_comment.author = request.user
+#             new_comment.post = post
+#             new_comment.save()
+
+#             new_comment.create_tags()
+        
+#         comments = Comment.objects.filter(post=post).order_by('-created_on')
+#         notification = Notification.objects.create(notification_type=2, from_user=request.user, to_user=post.author, post=post)
+
+#         context = {
+#             'post': post,
+#             'form': form,
+#             'comments': comments,
+#         }
+
+#         return render(request, 'social/post_detail.html', context)
+    # class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+#     model = UserProfile
+#     form_class = UserProfileForm
+#     template_name = 'social/profile_edit.html'
+
+#     # def form_valid(self, form):
+#     #     # تحديث username للمستخدم
+#     #     user = form.instance.user
+#     #     user.username = form.cleaned_data['username']
+#     #     user.email = form.cleaned_data['email']  # تحديث البريد الإلكتروني
+#     #     user.save()  # حفظ التعديلات في User
+#     #     return super().form_valid(form)
+
+#     def form_valid(self, form):
+#      user = form.instance.user
+#      print("Username:", form.cleaned_data['username'])
+#      print("Email:", form.cleaned_data['email'])
+#      user.username = form.cleaned_data['username']
+#      user.email = form.cleaned_data['email']
+#      print("Username:", form.cleaned_data['username'])
+#      print("Email:", form.cleaned_data['email'])
+#      user.save()
+
+#      return super().form_valid(form)
+    
+    # def check_username_availability(request):
+#     username = request.GET.get('username', None)
+#     is_available = not User.objects.filter(username=username).exists()
+#     return JsonResponse({'is_available': is_available})
+# def get_success_url(self):
+#     return reverse_lazy('profile', kwargs={'pk': self.object.pk})
+# class CommentReplyView(LoginRequiredMixin, View):
+#     def post(self, request, post_pk, pk, *args, **kwargs):
+#         post = Post.objects.get(pk=post_pk)
+#         parent_comment = Comment.objects.get(pk=pk)
+#         form = CommentForm(request.POST)
+
+#         if form.is_valid():
+#             new_comment = form.save(commit=False)
+#             new_comment.author = request.user
+#             new_comment.post = post
+#             new_comment.parent = parent_comment
+#             new_comment.save()
+
+#         notification = Notification.objects.create(notification_type=2, from_user=request.user, to_user=parent_comment.author, comment=new_comment)
+
+#         return redirect('post-detail', pk=post_pk)
+# class CreateMessage(View):
+#     # الدالة `post` تُنفذ عند إرسال طلب POST إلى هذا العرض.
+#     def post(self, request, pk, *args, **kwargs):
+#         # نقوم بجلب المحادثة (thread) من قاعدة البيانات باستخدام معرف المحادثة (pk).
+#         thread = ThreadModel.objects.get(pk=pk)
+        
+#         # نتحقق من هو المستقبل (receiver) في هذه المحادثة.
+#         # إذا كان المستخدم الحالي هو المستقبل في المحادثة، نعين المرسل (user) كـ المستقبل.
+#         if thread.receiver == request.user:
+#             receiver = thread.user
+#         else:
+#             # إذا لم يكن المستخدم الحالي هو المستقبل، نعين المستقبل كـ receiver في المحادثة.
+#             receiver = thread.receiver
+
+#         # نقوم بإنشاء رسالة جديدة باستخدام البيانات التي تم إدخالها في النموذج.
+#         message = MessageModel(
+#             thread=thread,                  # المحادثة التي تنتمي إليها الرسالة.
+#             sender_user=request.user,       # المستخدم الذي أرسل الرسالة (المستخدم الحالي).
+#             receiver_user=receiver,         # المستخدم الذي سيتلقى الرسالة.
+#             body=request.POST.get('message') # نص الرسالة المرسل من قبل المستخدم.
+#         )
+
+#         # نقوم بحفظ الرسالة الجديدة في قاعدة البيانات.
+#         message.save()
+
+#         notification = Notification.objects.create(
+#             notification_type=4,
+#             from_user=request.user,
+#             to_user=receiver,
+#             thread=thread
+#         )
+        
+#         # بعد حفظ الرسالة، نقوم بإعادة توجيه المستخدم إلى صفحة المحادثة الحالية.
+#         return redirect('thread', pk=pk)
+    # def post(self, request, *args, **kwargs):
+    #     explore_form = ExploreForm(request.POST)
+    #     if explore_form.is_valid():
+    #         query = explore_form.cleaned_data['query']
+    #         tag = Tag.objects.filter(name=query).first()
+
+    #         if tag:
+    #             posts = Post.objects.filter(tags__in=[tag])
+                
+    #             # إذا لم يكن هناك أي منشورات مرتبطة بالوسم
+    #             if not posts.exists():
+    #                 messages.error(request, 'No posts found for this tag.')
+    #                 return redirect('explore')  # إعادة التوجيه إلى صفحة البحث
+    #         else:
+    #             # إذا لم يتم العثور على الوسم
+    #             messages.error(request, 'Tag not found.')
+    #             return redirect('explore')  # إعادة التوجيه إلى صفحة البحث
+            
+    #         # إذا تم العثور على الوسم والمنشورات، نقوم بإعادة التوجيه مع الاستعلام
+    #         return redirect(f'/social/explore?query={query}')
+        
+    #     # إذا كان النموذج غير صالح
+    #     messages.error(request, 'Invalid search query.')
+    #     return redirect('/social/explore')
+    
+
+
+# في دالة post:
+# المقصود: عند إرسال نموذج من قبل المستخدم (مثل نموذج البحث)، فإن دالة post تتعامل مع البيانات التي أرسلها المستخدم.
+# أين تظهر رسالة الخطأ: إذا كان هناك خطأ في البيانات المرسلة، مثل إدخال غير صحيح أو عدم وجود وسم في قاعدة البيانات، فإن رسالة الخطأ تظهر مباشرة بعد محاولة المستخدم إرسال البيانات. هذا يعني أن الرسالة تكون أمام المستخدم مباشرة بعد إجراء العملية، وتساعده على فهم السبب وتوجيهه لإصلاح الخطأ.
+# في دالة get:
+# المقصود: دالة get تُستخدم لعرض البيانات على الصفحة عند تحميلها، سواء كان ذلك لأول مرة أو بعد إعادة التوجيه من دالة post.
+
+# def post(self, request, *args, **kwargs):
+#         explore_form = ExploreForm(request.POST)
+#         if explore_form.is_valid():
+#             query = explore_form.cleaned_data['query']
+#             tag = Tag.objects.filter(name=query).first()
+
+#             posts = None
+#             if tag:
+#                 posts = Post.objects.filter(tags__in=[tag])
+
+#             if posts:
+#                 context = {
+#                     'tag': tag,
+#                     'posts': posts,
+#                 }
+#             else:
+#                 context = {
+#                     'tag': tag,
+#                 }
+#             return redirect(f'/social/explore?query={query}')
+#         return redirect('/social/explore')
