@@ -8,8 +8,8 @@
         <div class="col-md-3 col-sm-4">
             <nav class="nav flex-column">
                 <a class="nav-link btn btn-light mb-2" href="{% url 'profile' object.pk %}">Back To Profile</a>
-                <a class="nav-link btn btn-warning mb-2" href="">Change Password</a>
-                <a class="nav-link btn btn-info mb-2" href="">Change Email</a>
+                <!-- <a class="nav-link btn btn-warning mb-2" href="">Change Password</a>
+                <a class="nav-link btn btn-info mb-2" href="">Change Email</a> -->
             </nav>
         </div>
 
@@ -25,6 +25,17 @@
 
             <div class="row justify-content-center mt-3 mb-5">
                 <div class="col-md-8 col-sm-12 border-bottom">
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <ul>
+                            {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
 
@@ -52,35 +63,57 @@
                             <label for="id_email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="id_email" name="email"
                                 value="{{ form.email.value }}">
+                            <div id="email-feedback" class="position-absolute"
+                                style="top: 50%; right: 10px; transform: translateY(-50%);">
+                            </div>
                         </div>
 
 
 
 
                         <div class="mb-3">
-                            <label for="id_bio" class="form-label">Bio</label>
+                            <label for="id_bio" class="form-label">Bio: </label>
                             <textarea class="form-control" id="id_bio" name="bio">{{ form.bio.value }}</textarea>
                         </div>
 
 
-
+                        {%comment%}
                         <div class="mb-3">
                             <label for="id_birth_date" class="form-label">Birth Date</label>
-                            <input type="text" class="form-control" id="id_birth_date" name="birth_date"
+                            <input type="text" class="form-control" id="aid_birth_date" name="birth_date"
                                 value="{{ form.instance.birth_date|date:'Y-m-d' }} ">
                         </div>
+                        {%endcomment%}
+                        <div class="mb-3">
+                            <label for="id_birth_date" class="form-label">Birth Date</label>
+                            <input type="date" class="form-control" id="id_birth_date" name="birth_date"
+                                value="{{ form.instance.birth_date|date:'Y-m-d' }}">
+                        </div>
+
 
                         <div class="mb-3">
                             <label for="id_location" class="form-label">Location</label>
                             <input type="text" class="form-control" id="id_location" name="location"
                                 value="{{ form.location.value }}">
                         </div>
+                        {%comment%}
 
                         <div class="mb-3">
                             <label for="id_picture" class="form-label">Profile Picture</label>
-                            <input type="file" class="form-control" id="id_picture" name="picture">
+                            <input type="file" class="form-control" id="aid_picture" name="picture">
                         </div>
+                        {%endcomment%}
+                        <div class="mb-3">
+                            <label for="id_picture" class="form-label">Profile Picture</label>
+                            <input type="file" class="form-control" id="id_picture" name="picture">
 
+                            <!-- عرض الصورة الحالية إذا كانت موجودة -->
+                            {% if form.instance.picture %}
+                            <p>Current Picture: <a
+                                    href="{{ form.instance.picture.url }}">{{form.instance.picture.name}}</a></p>
+                            <img src="{{ form.instance.picture.url }}" alt="Profile Picture" style="max-width: 200px;">
+                            {% endif %}
+                        </div>
                         <div class="d-grid gap-2">
                             <button class="btn btn-success mt-3">Submit!</button>
                         </div>
@@ -95,14 +128,16 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+
     $(document).ready(function () {
         $('#id_username').on('input', function () {
             var username = $(this).val();
             if (username.length > 0) {
                 $.ajax({
-                    url: "{% url 'check_username_availability' %}",
+                    url: "{% url 'check_availability' %}",
                     data: {
-                        'username': username
+                        'field_type': 'username',
+                        'value': username
                     },
                     success: function (data) {
                         var feedback = $('#username-feedback');
@@ -117,6 +152,30 @@
                 $('#username-feedback').html('');  // إزالة الأيقونة عند عدم وجود نص
             }
         });
+
+        $('#id_email').on('input', function () {
+            var email = $(this).val();
+            if (email.length > 0) {
+                $.ajax({
+                    url: "{% url 'check_availability' %}",
+                    data: {
+                        'field_type': 'email',
+                        'value': email
+                    },
+                    success: function (data) {
+                        var feedback = $('#email-feedback');
+                        if (data.is_available) {
+                            feedback.html('<span style="color: green;">&#10003;</span>');  // رمز صح
+                        } else {
+                            feedback.html('<span style="color: red;">&#10007;</span>');  // رمز إكس
+                        }
+                    }
+                });
+            } else {
+                $('#email-feedback').html('');  // إزالة الأيقونة عند عدم وجود نص
+            }
+        });
     });
+
 </script>
 {% endblock content %}

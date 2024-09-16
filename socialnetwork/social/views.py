@@ -552,12 +552,26 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user == profile.user
 
 
-def check_username_availability(request):
-    username = request.GET.get('username', None)
-    is_available = not User.objects.filter(username=username).exists()
+# def check_username_availability(request):
+#     username = request.GET.get('username', None)
+#     is_available = not User.objects.filter(username=username).exists()
+#     return JsonResponse({'is_available': is_available})
+# def get_success_url(self):
+#     return reverse_lazy('profile', kwargs={'pk': self.object.pk})
+    
+def check_availability(request):
+    field_type = request.GET.get('field_type', None)
+    value = request.GET.get('value', None)
+
+    if field_type == 'username':
+        is_available = not User.objects.filter(username=value).exists()
+    elif field_type == 'email':
+        is_available = not User.objects.filter(email=value).exists()
+    else:
+        is_available = False
+
     return JsonResponse({'is_available': is_available})
-def get_success_url(self):
-    return reverse_lazy('profile', kwargs={'pk': self.object.pk})
+
 
 
 
