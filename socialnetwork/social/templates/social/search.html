@@ -7,25 +7,28 @@
             <a href="{% url 'post-list' %}" class="btn btn-light">Back To Feed</a>
         </div>
     </div>
-    
+
     {% for profile in profile_list %}
-        <div class="row justify-content-center mt-3">
-            <div class="col-md-5 col-sm-12 border-bottom position-relative">
-                <div>
-                    <a href="{% url 'profile' profile.pk %}">
-                        <img class="round-circle post-img" height="30" width="30" src="{{ profile.picture.url }}" />
-                    </a>
-                    <p class="post-text">
-                        <a class="text-primary post-link" href="{% url 'profile' profile.pk %}">@{{ profile.user }}</a>
-                    </p>
-                </div>
-                <p><a class="text-primary post-link" href="{% url 'profile' profile.pk %}">@{{ profile.user }}</a></p>
-                {% if profile.location %}
-                    <p>{{ profile.location }}</p>
-                {% endif %}
-                <p>Followers: {{ profile.followers.all.count }}</p>
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom position-relative">
+            <div>
+                {%comment%}
+                class="round-circle post-img"
+                {%endcomment%}
+                <a href="{% url 'profile' profile.pk %}">
+                    <img class="rounded-circle" height="30" width="30" src="{{ profile.picture.url }}" />
+                </a>
+                <p class="post-text">
+                    <a class="text-primary post-link" href="{% url 'profile' profile.pk %}">@{{ profile.user }}</a>
+                </p>
             </div>
+            <p><a class="text-primary post-link" href="{% url 'profile' profile.pk %}">Name: {{ profile.name }}</a></p>
+            {% if profile.location %}
+            <p>Location: {{ profile.location }}</p>
+            {% endif %}
+            <p>Followers: {{ profile.followers.all.count }}</p>
         </div>
+    </div>
     {% endfor %}
 </div>
 {% endblock content %}
