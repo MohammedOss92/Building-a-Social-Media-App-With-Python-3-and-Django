@@ -103,6 +103,8 @@
                             <input type="file" class="form-control" id="aid_picture" name="picture">
                         </div>
                         {%endcomment%}
+
+                        {%comment%}
                         <div class="mb-3">
                             <label for="id_picture" class="form-label">Profile Picture</label>
                             <input type="file" class="form-control" id="id_picture" name="picture">
@@ -114,6 +116,29 @@
                             <img src="{{ form.instance.picture.url }}" alt="Profile Picture" style="max-width: 200px;">
                             {% endif %}
                         </div>
+                        {%endcomment%}
+                        <div class="mt-3">
+                            <label for="image_selector" class="form-label">Select Profile Picture</label>
+                            <select id="image_selector" class="form-select" onchange="updateImageInput(this.value)">
+                                <option value="">-- Select an Image or Upload New --</option>
+                                <option value="{% url 'select_image' %}">Select Existing Image</option>
+                                <option value="upload">Upload New Image</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="upload_section" style="display: none;">
+                            <label for="id_picture" class="form-label">Profile Picture</label>
+                            <input type="file" class="form-control" id="id_picture" name="picture">
+
+                            <!-- عرض الصورة الحالية إذا كانت موجودة -->
+                            {% if form.instance.picture %}
+                            <p>Current Picture: <a href="{{ form.instance.picture.url }}">{{ form.instance.picture.name
+                                    }}</a></p>
+                            <img src="{{ form.instance.picture.url }}" alt="Profile Picture" style="max-width: 200px;">
+                            {% endif %}
+                        </div>
+
+
                         <div class="d-grid gap-2">
                             <button class="btn btn-success mt-3">Submit!</button>
                         </div>
@@ -176,6 +201,21 @@
             }
         });
     });
+
+
+    function updateImageInput(selectedValue) {
+        const uploadSection = document.getElementById('upload_section');
+
+        if (selectedValue === 'upload') {
+            uploadSection.style.display = 'block'; // إظهار قسم رفع الصورة
+        } else {
+            uploadSection.style.display = 'none'; // إخفاء قسم رفع الصورة
+            if (selectedValue) {
+                window.location.href = selectedValue; // الانتقال إلى رابط اختيار الصورة الموجودة
+            }
+        }
+    }
+
 
 </script>
 {% endblock content %}

@@ -71,6 +71,14 @@
                 <button class="btn btn-outline-success" type="submit">Follow</button>
             </form>
             {% endif %}
+            <form method="POST" action="{% url 'create-thread' %}">
+                {% csrf_token %}
+                <input type="hidden" name="username" value="{{ user.username }}">
+                <button class="btn btn-outline-primary mt-2" type="submit">Send Message</button>
+
+            </form>
+
+
             {% endif %}
         </div>
     </div>

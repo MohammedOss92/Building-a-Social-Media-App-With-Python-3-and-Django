@@ -3,29 +3,49 @@
 {% load static %}
 {% block content %}
 
+<!DOCTYPE html>
+<html lang="ar">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اقتراحات المتابعة</title>
+    <title>Suggestion</title>
+    <link rel="stylesheet" href="{% static 'path_to_your_css_file.css' %}">
 </head>
 
 <body>
-    <h1>اقتراحات المتابعة</h1>
+    <div class="container">
+        <h1 class="text-center">Suggestion</h1>
 
-    <ul>
-        {% for suggestion in suggestions %}
-        <li>
-            {{ suggestion.username }}
-            <!-- عرض صورة الملف الشخصي -->
-            <img src="{{ suggestion.profile.picture.url }}" alt="Profile Picture" width="50">
-            <!-- رابط لملف المستخدم الشخصي -->
-            <a href="{% url 'profile' suggestion.pk %}">زيارة الملف الشخصي</a>
-        </li>
-        {% empty %}
-        <li>لا يوجد اقتراحات في الوقت الحالي</li>
-        {% endfor %}
-    </ul>
+        <ul class="list-unstyled">
+            {% for suggestion in suggestions %}
+            <li class="media my-4">
+                <!-- عرض صورة الملف الشخصي -->
+                <a href="{% url 'profile' suggestion.pk %}">
+                    <img class="mr-3 rounded-circle" src="{{ suggestion.profile.picture.url }}" alt="Profile Picture"
+                        width="50">
+                </a>
 
-    <!-- رابط للعودة إلى الصفحة الرئيسية -->
+                <div class="media-body">
+                    <!-- اسم المستخدم كرابط -->
+                    <h5 class="mt-0 mb-1">
+                        <a href="{% url 'profile' suggestion.pk %}">{{ suggestion.username }}</a>
+
+                        <!-- <a href="{% url 'profile' suggestion.pk %}" class="btn btn-primary btn-sm">زيارة الملف
+                            الشخصي</a> -->
+                    </h5>
+                </div>
+            </li>
+            {% empty %}
+            <li class="text-center">لا يوجد اقتراحات في الوقت الحالي</li>
+            {% endfor %}
+        </ul>
+
+        <!-- رابط للعودة إلى الصفحة الرئيسية -->
+
+    </div>
 </body>
+
+</html>
+
 {% endblock content %}

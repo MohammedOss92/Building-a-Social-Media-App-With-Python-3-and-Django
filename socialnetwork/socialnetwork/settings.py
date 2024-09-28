@@ -166,6 +166,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "optional"  # يمكن أن يكون
+ACCOUNT_FORMS = {
+    'signup': 'social.forms.CustomSignupForm',
+}
+
 
 #إذا كنت ترغب في تخصيص نماذج التسجيل أو تسجيل الدخول، يمكنك إنشاء نماذج مخصصة وتسجيلها في settings.py:
 #ACCOUNT_FORMS = {
