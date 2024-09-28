@@ -39,6 +39,6 @@ urlpatterns = [
     path('check_availability/', check_availability, name='check_availability'),
 
     path('suggestions/', suggestions_view, name='suggestions'),
-
+    path('thread/update-read-status/<int:pk>/', UpdateReadStatusView.as_view(), name='update-read-status'),
 
 ]

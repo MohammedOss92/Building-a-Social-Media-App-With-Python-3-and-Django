@@ -745,18 +745,47 @@ class CreateThread(LoginRequiredMixin,View):
             return redirect('create-thread')
 
 
-class ThreadView(LoginRequiredMixin,View):
+# class ThreadView(LoginRequiredMixin,View):
+#     # الدالة `get` تُنفذ عند إرسال طلب GET إلى هذا العرض.
+#     def get(self, request, pk, *args, **kwargs):
+#         # نقوم بإنشاء نموذج فارغ للرسالة ليتم عرضه في صفحة المحادثة.
+#         form = MessageForm()
+
+#         # نجلب المحادثة (thread) من قاعدة البيانات باستخدام معرف المحادثة (pk).
+#         thread = ThreadModel.objects.get(pk=pk)
+
+        
+
+#         # نقوم بجلب قائمة الرسائل التي تنتمي إلى هذه المحادثة من قاعدة البيانات.
+#         # نستخدم `filter` لجلب جميع الرسائل التي تحتوي على معرف المحادثة.
+#         message_list = MessageModel.objects.filter(thread__pk__contains=pk)
+
+#         # نقوم بتجهيز البيانات (context) التي سيتم تمريرها إلى القالب لعرضها.
+#         context = {
+#             'thread': thread,               # المحادثة الحالية.
+#             'form': form,                   # نموذج الرسالة الفارغ.
+#             'message_list': message_list    # قائمة الرسائل في المحادثة.
+#         }
+
+#         # نقوم بعرض صفحة المحادثة (`thread.html`) مع تمرير البيانات اللازمة إليها.
+#         return render(request, 'social/thread.html', context)
+        
+
+
+class ThreadView(LoginRequiredMixin, View):
     # الدالة `get` تُنفذ عند إرسال طلب GET إلى هذا العرض.
     def get(self, request, pk, *args, **kwargs):
         # نقوم بإنشاء نموذج فارغ للرسالة ليتم عرضه في صفحة المحادثة.
         form = MessageForm()
 
         # نجلب المحادثة (thread) من قاعدة البيانات باستخدام معرف المحادثة (pk).
-        thread = ThreadModel.objects.get(pk=pk)
+        thread = get_object_or_404(ThreadModel, pk=pk)
 
-        # نقوم بجلب قائمة الرسائل التي تنتمي إلى هذه المحادثة من قاعدة البيانات.
-        # نستخدم `filter` لجلب جميع الرسائل التي تحتوي على معرف المحادثة.
-        message_list = MessageModel.objects.filter(thread__pk__contains=pk)
+        # تحديث حالة قراءة الرسائل التي استلمها المستخدم الحالي.
+        MessageModel.objects.filter(receiver_user=request.user, thread=thread).update(is_read=True)
+
+        # نجلب قائمة الرسائل التي تنتمي إلى هذه المحادثة من قاعدة البيانات.
+        message_list = MessageModel.objects.filter(thread=thread)
 
         # نقوم بتجهيز البيانات (context) التي سيتم تمريرها إلى القالب لعرضها.
         context = {
@@ -768,6 +797,16 @@ class ThreadView(LoginRequiredMixin,View):
         # نقوم بعرض صفحة المحادثة (`thread.html`) مع تمرير البيانات اللازمة إليها.
         return render(request, 'social/thread.html', context)
 
+
+
+class UpdateReadStatusView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        # اجلب المحادثة
+        thread = get_object_or_404(ThreadModel, pk=pk)
+        # تحديث حالة قراءة الرسائل
+        MessageModel.objects.filter(receiver_user=request.user, thread=thread, is_read=False).update(is_read=True)
+        return JsonResponse({'status': 'success'})
+    
 
 class CreateMessage(LoginRequiredMixin,View):
     def post(self, request, pk, *args, **kwargs):
