@@ -16,8 +16,12 @@
 <body>
     <div class="container">
         <h1 class="text-center">Suggestion</h1>
+        {%comment%}
+        col-md-4 my-3
+        list-unstyled
+        {%endcomment%}
 
-        <ul class="list-unstyled">
+        <ul class="col-md-4 my-3">
             {% for suggestion in suggestions %}
             <li class="media my-4">
                 <!-- عرض صورة الملف الشخصي -->
@@ -44,6 +48,9 @@
         <!-- رابط للعودة إلى الصفحة الرئيسية -->
 
     </div>
+
+
+
 </body>
 
 </html>

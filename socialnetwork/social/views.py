@@ -692,6 +692,7 @@ class ListThreads(LoginRequiredMixin,View):
 
         # نقوم بعرض صفحة HTML (`inbox.html`) باستخدام القالب `social/inbox.html`، وتمرير البيانات المخزنة في `context` إلى القالب.
         return render(request, 'social/inbox.html', context)
+        
 
 class CreateThread(LoginRequiredMixin,View):
     # الدالة `get` تُنفذ عند إرسال طلب GET إلى هذا العرض.
@@ -889,7 +890,7 @@ class Explore(View):
     
 User = get_user_model()
 
-def get_suggestions(user, limit=6):
+def get_suggestions(user, limit=10):
     followings = user.profile.followers.all()  # المتابعون الحاليون للمستخدم
     suggestions = User.objects.exclude(pk__in=followings).exclude(pk=user.pk).order_by("?")[:limit]  # استبعاد المستخدمين المتابعين الحاليين
     return suggestions

@@ -37,10 +37,13 @@
 }
 
 .notification-badge:hover {
+    display: inline-block;
     cursor: pointer;
     opacity: 0.75;
     transition: 0.3s;
 }
+
+
 
 .dropdown {
     position: relative;
@@ -80,6 +83,8 @@
     padding-right: 5px;
     transition: 0.3s
 }
+
+
 
 .dropdown-item-close:hover {
     color: rgb(180, 25, 25);
@@ -137,7 +142,12 @@
 }
 
 
-
+.profile-pic {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
 
 
 /* .dropdown {
